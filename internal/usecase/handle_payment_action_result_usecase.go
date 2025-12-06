@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/repository"
@@ -57,7 +56,19 @@ func (u *handlePaymentActionResultUseCase) Execute(ctx context.Context, input Ha
 
 	switch intent := (*paymentIntent).(type) {
 	case domain.PaymentIntentRequiresAction:
-		event, aggregate, err := intent.StartProcessing()
+		var (
+			event     domain.PaymentIntentEvent
+			aggregate domain.PaymentIntent
+		)
+
+		switch intent.CaptureMethod {
+		case domain.PaymentCaptureMethodAutomatic:
+			event, aggregate, err = intent.StartProcessing()
+		case domain.PaymentCaptureMethodManual:
+			event, aggregate, err = intent.RequireCapture()
+		default:
+			panic("invalid capture method")
+		}
 		if err != nil {
 			return nil, err
 		}
