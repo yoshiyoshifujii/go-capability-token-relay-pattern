@@ -3,7 +3,8 @@
 ## Project Structure & Module Organization
 - The module root is defined in `go.mod` as `yoshiyoshifujii/go-capability-token-relay-pattern`; keep orchestration code at the top level.
 - Place runnable entry points under `cmd/<app>/main.go` (e.g., `cmd/tokenrelay/main.go`) and reserve `internal/<domain>` for capability-token logic that should not be imported externally.
-- Reusable adapters (HTTP clients, queue relays) belong in `pkg/<component>` so they can be consumed by multiple binaries.
+- Adapters and fakes live under `internal/interface_adaptor/<kind>` (e.g., repository, service); use them to satisfy `internal/repository` and `internal/service` interfaces from the usecase layer. Tests that wire adapters should go under `internal/interface_adaptor/test`.
+- Reusable adapters (HTTP clients, queue relays) that must be imported by multiple binaries belong in `pkg/<component>`; keep domain-facing contracts in `internal/repository` and `internal/service`.
 - Check `README.md` and the linked Zenn article for architecture context, and mirror its sections (Issuer, Relay, Consumer) with matching package names.
 - Store integration fixtures in `testdata/` beside the packages they verify and add diagrams or flow specs in `docs/` as the design evolves.
 
