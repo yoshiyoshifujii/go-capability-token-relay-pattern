@@ -1,6 +1,10 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
+)
 
 type (
 	RelayCapabilityTokensUseCaseInput struct {
@@ -18,15 +22,29 @@ type (
 		Execute(context.Context, RelayCapabilityTokensUseCaseInput) (*RelayCapabilityTokensUseCaseOutput, error)
 	}
 
-	relayCapabilityTokensUseCase struct{}
+	relayCapabilityTokensUseCase struct {
+		tokenService service.TokenService
+	}
 )
 
-func NewRelayCapabilityTokensUseCase() RelayCapabilityTokensUseCase {
-	return &relayCapabilityTokensUseCase{}
+func NewRelayCapabilityTokensUseCase(tokenService service.TokenService) RelayCapabilityTokensUseCase {
+	return &relayCapabilityTokensUseCase{
+		tokenService: tokenService,
+	}
 }
 
 func (u *relayCapabilityTokensUseCase) Execute(ctx context.Context, input RelayCapabilityTokensUseCaseInput) (*RelayCapabilityTokensUseCaseOutput, error) {
+	verified, err := u.tokenService.RelayTokens(ctx, service.RelayTokensInput{
+		OrderProcessingID: input.OrderProcessingID,
+		CouponToken:       input.CouponToken,
+		PointsToken:       input.PointsToken,
+		PaymentToken:      input.PaymentToken,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &RelayCapabilityTokensUseCaseOutput{
-		VerifiedTokens: make(map[string]string),
+		VerifiedTokens: verified,
 	}, nil
 }

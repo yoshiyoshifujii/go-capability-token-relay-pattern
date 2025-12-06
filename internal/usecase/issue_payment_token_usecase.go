@@ -1,6 +1,10 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
+)
 
 type (
 	IssuePaymentTokenUseCaseInput struct {
@@ -17,13 +21,28 @@ type (
 		Execute(context.Context, IssuePaymentTokenUseCaseInput) (*IssuePaymentTokenUseCaseOutput, error)
 	}
 
-	issuePaymentTokenUseCase struct{}
+	issuePaymentTokenUseCase struct {
+		tokenService service.TokenService
+	}
 )
 
-func NewIssuePaymentTokenUseCase() IssuePaymentTokenUseCase {
-	return &issuePaymentTokenUseCase{}
+func NewIssuePaymentTokenUseCase(tokenService service.TokenService) IssuePaymentTokenUseCase {
+	return &issuePaymentTokenUseCase{
+		tokenService: tokenService,
+	}
 }
 
 func (u *issuePaymentTokenUseCase) Execute(ctx context.Context, input IssuePaymentTokenUseCaseInput) (*IssuePaymentTokenUseCaseOutput, error) {
-	return &IssuePaymentTokenUseCaseOutput{}, nil
+	token, err := u.tokenService.IssuePaymentToken(ctx, service.IssuePaymentTokenInput{
+		OrderProcessingID: input.OrderProcessingID,
+		UserID:            input.UserID,
+		PaymentMethod:     input.PaymentMethod,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &IssuePaymentTokenUseCaseOutput{
+		Token: token,
+	}, nil
 }

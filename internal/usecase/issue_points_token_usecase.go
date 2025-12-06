@@ -1,6 +1,10 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
+)
 
 type (
 	IssuePointsTokenUseCaseInput struct {
@@ -17,13 +21,28 @@ type (
 		Execute(context.Context, IssuePointsTokenUseCaseInput) (*IssuePointsTokenUseCaseOutput, error)
 	}
 
-	issuePointsTokenUseCase struct{}
+	issuePointsTokenUseCase struct {
+		tokenService service.TokenService
+	}
 )
 
-func NewIssuePointsTokenUseCase() IssuePointsTokenUseCase {
-	return &issuePointsTokenUseCase{}
+func NewIssuePointsTokenUseCase(tokenService service.TokenService) IssuePointsTokenUseCase {
+	return &issuePointsTokenUseCase{
+		tokenService: tokenService,
+	}
 }
 
 func (u *issuePointsTokenUseCase) Execute(ctx context.Context, input IssuePointsTokenUseCaseInput) (*IssuePointsTokenUseCaseOutput, error) {
-	return &IssuePointsTokenUseCaseOutput{}, nil
+	token, err := u.tokenService.IssuePointsToken(ctx, service.IssuePointsTokenInput{
+		OrderProcessingID: input.OrderProcessingID,
+		UserID:            input.UserID,
+		PointsToUse:       input.PointsToUse,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &IssuePointsTokenUseCaseOutput{
+		Token: token,
+	}, nil
 }

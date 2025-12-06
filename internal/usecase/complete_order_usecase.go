@@ -24,5 +24,7 @@ func NewCompleteOrderUseCase() CompleteOrderUseCase {
 }
 
 func (u *completeOrderUseCase) Execute(ctx context.Context, input CompleteOrderUseCaseInput) (*CompleteOrderUseCaseOutput, error) {
-	return &CompleteOrderUseCaseOutput{}, nil
+	return &CompleteOrderUseCaseOutput{
+		OrderID: input.OrderProcessingID,
+	}, nil
 }

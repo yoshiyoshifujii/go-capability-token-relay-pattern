@@ -1,6 +1,10 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
+)
 
 type (
 	IssueCouponTokenUseCaseInput struct {
@@ -17,13 +21,28 @@ type (
 		Execute(context.Context, IssueCouponTokenUseCaseInput) (*IssueCouponTokenUseCaseOutput, error)
 	}
 
-	issueCouponTokenUseCase struct{}
+	issueCouponTokenUseCase struct {
+		tokenService service.TokenService
+	}
 )
 
-func NewIssueCouponTokenUseCase() IssueCouponTokenUseCase {
-	return &issueCouponTokenUseCase{}
+func NewIssueCouponTokenUseCase(tokenService service.TokenService) IssueCouponTokenUseCase {
+	return &issueCouponTokenUseCase{
+		tokenService: tokenService,
+	}
 }
 
 func (u *issueCouponTokenUseCase) Execute(ctx context.Context, input IssueCouponTokenUseCaseInput) (*IssueCouponTokenUseCaseOutput, error) {
-	return &IssueCouponTokenUseCaseOutput{}, nil
+	token, err := u.tokenService.IssueCouponToken(ctx, service.IssueCouponTokenInput{
+		OrderProcessingID: input.OrderProcessingID,
+		UserID:            input.UserID,
+		CouponRef:         input.CouponRef,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &IssueCouponTokenUseCaseOutput{
+		Token: token,
+	}, nil
 }
