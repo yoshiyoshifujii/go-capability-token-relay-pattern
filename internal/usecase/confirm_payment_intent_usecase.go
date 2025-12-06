@@ -7,6 +7,7 @@ import (
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/repository"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 )
 
 type (
@@ -26,15 +27,23 @@ type (
 
 	confirmPaymentIntentUseCase struct {
 		paymentIntentRepository repository.PaymentIntentRepository
+		paymentProvider         service.PaymentMethodProviderService
 	}
 )
 
-func NewConfirmPaymentIntentUseCase(paymentIntentRepository repository.PaymentIntentRepository) ConfirmPaymentIntentUseCase {
+func NewConfirmPaymentIntentUseCase(
+	paymentIntentRepository repository.PaymentIntentRepository,
+	paymentProvider service.PaymentMethodProviderService,
+) ConfirmPaymentIntentUseCase {
 	if paymentIntentRepository == nil {
 		panic("paymentIntentRepository is nil")
 	}
+	if paymentProvider == nil {
+		panic("paymentProvider is nil")
+	}
 	return &confirmPaymentIntentUseCase{
 		paymentIntentRepository: paymentIntentRepository,
+		paymentProvider:         paymentProvider,
 	}
 }
 
@@ -55,18 +64,33 @@ func (u *confirmPaymentIntentUseCase) Execute(ctx context.Context, input Confirm
 		return nil, errors.New("payment intent not found")
 	}
 
+	intent, ok := (*paymentIntent).(domain.PaymentIntentRequiresConfirmation)
+	if !ok {
+		return nil, errors.New("payment intent not ready for confirmation")
+	}
+
+	result, err := u.paymentProvider.ConfirmPaymentMethod(ctx, service.PaymentConfirmationRequest{
+		Intent:        intent,
+		CaptureMethod: input.CaptureMethod,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	var (
 		event     domain.PaymentIntentEvent
 		aggregate domain.PaymentIntent
 	)
 
-	switch input.CaptureMethod {
-	case domain.PaymentCaptureMethodAutomatic:
-		event, aggregate, err = (*paymentIntent).StartProcessing()
-	case domain.PaymentCaptureMethodManual:
-		event, aggregate, err = (*paymentIntent).RequireCapture()
+	switch result.NextStatus {
+	case service.PaymentConfirmationNextProcessing:
+		event, aggregate, err = intent.StartProcessing()
+	case service.PaymentConfirmationNextRequiresAction:
+		event, aggregate, err = intent.RequireAction()
+	case service.PaymentConfirmationNextRequiresCapture:
+		event, aggregate, err = intent.RequireCapture()
 	default:
-		panic("invalid capture method")
+		panic("unexpected payment intent status")
 	}
 
 	if err != nil {

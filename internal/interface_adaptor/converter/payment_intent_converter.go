@@ -38,6 +38,13 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			Status:        "requires_confirmation",
 			PaymentMethod: v.PaymentMethod,
 		}, nil
+	case domain.PaymentIntentRequiresAction:
+		return PaymentIntentView{
+			ID:            v.ID,
+			SeqNr:         v.SeqNr,
+			Status:        "requires_action",
+			PaymentMethod: v.PaymentMethod,
+		}, nil
 	case domain.PaymentIntentRequiresCapture:
 		return PaymentIntentView{
 			ID:            v.ID,

@@ -20,6 +20,11 @@ type (
 		PaymentMethod PaymentMethod
 	}
 
+	PaymentIntentRequiresAction struct {
+		paymentIntentMeta
+		PaymentMethod PaymentMethod
+	}
+
 	PaymentIntentRequiresCapture struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
@@ -102,6 +107,30 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 			SeqNr: seqNr,
 		},
 		PaymentMethod: method,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresConfirmation) RequireAction() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentRequiresActionEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+	}
+
+	aggregate := PaymentIntentRequiresAction{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
 	}
 
 	return event, aggregate, nil

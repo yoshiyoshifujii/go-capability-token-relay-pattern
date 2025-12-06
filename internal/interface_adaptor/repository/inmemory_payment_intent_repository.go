@@ -44,6 +44,8 @@ func paymentIntentID(intent domain.PaymentIntent) domain.PaymentIntentID {
 		return v.ID
 	case domain.PaymentIntentRequiresConfirmation:
 		return v.ID
+	case domain.PaymentIntentRequiresAction:
+		return v.ID
 	case domain.PaymentIntentRequiresCapture:
 		return v.ID
 	case domain.PaymentIntentProcessing:

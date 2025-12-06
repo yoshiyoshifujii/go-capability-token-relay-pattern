@@ -9,17 +9,19 @@ import (
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/converter"
 	iarepo "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/repository"
 	iasvc "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/service"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/usecase"
 )
 
 func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	ctx := t.Context()
-	tokenService := iasvc.NewTokenService()
-	businessRepo := iarepo.NewInMemoryBusinessRepository()
-	paymentIntentRepo := iarepo.NewInMemoryPaymentIntentRepository()
 	businessIDGenerator := iasvc.NewFakeBusinessIDGenerator(domain.NewBusinessID("biz_123"))
+	businessRepo := iarepo.NewInMemoryBusinessRepository()
 	cartIDGenerator := iasvc.NewFakeCartIDGenerator(domain.NewCartID("cart_123"))
+	tokenService := iasvc.NewTokenService()
+	paymentIntentRepo := iarepo.NewInMemoryPaymentIntentRepository()
 	paymentIntentIDGenerator := iasvc.NewFakePaymentIntentIDGenerator(domain.PaymentIntentID("pi_123"))
+	paymentProvider := iasvc.NewPaymentMethodProviderService(service.PaymentConfirmationNextRequiresCapture)
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
@@ -103,7 +105,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "requires_confirmation", latestView.Status)
 
-	confirmPaymentIntent := usecase.NewConfirmPaymentIntentUseCase(paymentIntentRepo)
+	confirmPaymentIntent := usecase.NewConfirmPaymentIntentUseCase(paymentIntentRepo, paymentProvider)
 	confirmPaymentIntentOutput, err := confirmPaymentIntent.Execute(ctx, usecase.ConfirmPaymentIntentUseCaseInput{
 		PaymentIntentID: paymentIntentOutput.PaymentIntentID,
 		CaptureMethod:   domain.PaymentCaptureMethodManual,
