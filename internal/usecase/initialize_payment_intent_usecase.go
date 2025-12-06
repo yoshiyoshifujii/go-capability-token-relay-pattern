@@ -37,6 +37,18 @@ func NewInitializePaymentIntentUseCase(
 	paymentIntentGenerator service.PaymentIDGenerator,
 	businessRepository repository.BusinessRepository,
 ) InitializePaymentIntentUseCase {
+	if tokenService == nil {
+		panic("tokenService is nil")
+	}
+	if paymentIntentRepository == nil {
+		panic("paymentIntentRepository is nil")
+	}
+	if paymentIntentGenerator == nil {
+		panic("paymentIntentGenerator is nil")
+	}
+	if businessRepository == nil {
+		panic("businessRepository is nil")
+	}
 	return &initializePaymentIntentUseCase{
 		tokenService:            tokenService,
 		paymentIntentRepository: paymentIntentRepository,
@@ -46,22 +58,6 @@ func NewInitializePaymentIntentUseCase(
 }
 
 func (u *initializePaymentIntentUseCase) Execute(ctx context.Context, input InitializePaymentIntentUseCaseInput) (*InitializePaymentIntentUseCaseOutput, error) {
-	if u == nil {
-		panic("usecase is nil")
-	}
-	if u.tokenService == nil {
-		return nil, errors.New("tokenService is nil")
-	}
-	if u.paymentIntentRepository == nil {
-		return nil, errors.New("paymentIntentRepository is nil")
-	}
-	if u.paymentIntentGenerator == nil {
-		return nil, errors.New("paymentIntentGenerator is nil")
-	}
-	if u.businessRepository == nil {
-		return nil, errors.New("businessRepository is nil")
-	}
-
 	cart, err := u.tokenService.ParseCartToken(ctx, input.CartToken)
 	if err != nil {
 		return nil, err

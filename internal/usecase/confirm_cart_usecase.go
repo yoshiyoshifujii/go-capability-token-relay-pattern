@@ -27,6 +27,9 @@ type (
 )
 
 func NewConfirmCartUseCase(tokenService service.TokenService) ConfirmCartUseCase {
+	if tokenService == nil {
+		panic("tokenService is nil")
+	}
 	return &confirmCartUseCase{
 		tokenService: tokenService,
 	}

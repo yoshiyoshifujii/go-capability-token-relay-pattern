@@ -27,6 +27,9 @@ type (
 )
 
 func NewRelayCapabilityTokensUseCase(tokenService service.TokenService) RelayCapabilityTokensUseCase {
+	if tokenService == nil {
+		panic("tokenService is nil")
+	}
 	return &relayCapabilityTokensUseCase{
 		tokenService: tokenService,
 	}

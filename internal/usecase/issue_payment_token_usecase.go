@@ -27,6 +27,9 @@ type (
 )
 
 func NewIssuePaymentTokenUseCase(tokenService service.TokenService) IssuePaymentTokenUseCase {
+	if tokenService == nil {
+		panic("tokenService is nil")
+	}
 	return &issuePaymentTokenUseCase{
 		tokenService: tokenService,
 	}

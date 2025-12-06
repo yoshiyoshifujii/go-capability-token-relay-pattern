@@ -28,19 +28,15 @@ type (
 )
 
 func NewSelectPaymentMethodUseCase(paymentIntentRepository repository.PaymentIntentRepository) SelectPaymentMethodUseCase {
+	if paymentIntentRepository == nil {
+		panic("paymentIntentRepository is nil")
+	}
 	return &selectPaymentMethodUseCase{
 		paymentIntentRepository: paymentIntentRepository,
 	}
 }
 
 func (u *selectPaymentMethodUseCase) Execute(ctx context.Context, input SelectPaymentMethodUseCaseInput) (*SelectPaymentMethodUseCaseOutput, error) {
-	if u == nil {
-		panic("usecase is nil")
-	}
-	if u.paymentIntentRepository == nil {
-		return nil, errors.New("paymentIntentRepository is nil")
-	}
-
 	paymentIntent, err := u.paymentIntentRepository.FindBy(ctx, input.PaymentIntentID)
 	if err != nil {
 		return nil, err

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
@@ -34,6 +33,12 @@ func NewCreateBusinessUseCase(
 	businessIDGenerator service.BusinessIDGenerator,
 	businessRepository repository.BusinessRepository,
 ) CreateBusinessUseCase {
+	if businessIDGenerator == nil {
+		panic("businessIDGenerator is nil")
+	}
+	if businessRepository == nil {
+		panic("businessRepository is nil")
+	}
 	return &createBusinessUseCase{
 		businessIDGenerator: businessIDGenerator,
 		businessRepository:  businessRepository,
@@ -41,13 +46,6 @@ func NewCreateBusinessUseCase(
 }
 
 func (u *createBusinessUseCase) Execute(ctx context.Context, input CreateBusinessUseCaseInput) (*CreateBusinessUseCaseOutput, error) {
-	if u.businessIDGenerator == nil {
-		return nil, errors.New("businessIDGenerator is nil")
-	}
-	if u.businessRepository == nil {
-		return nil, errors.New("businessRepository is nil")
-	}
-
 	businessID, err := u.businessIDGenerator.GenerateID(ctx)
 	if err != nil {
 		return nil, err

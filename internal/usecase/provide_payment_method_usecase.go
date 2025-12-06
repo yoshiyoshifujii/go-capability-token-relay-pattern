@@ -30,19 +30,15 @@ type (
 )
 
 func NewProvidePaymentMethodUseCase(paymentIntentRepository repository.PaymentIntentRepository) ProvidePaymentMethodUseCase {
+	if paymentIntentRepository == nil {
+		panic("paymentIntentRepository is nil")
+	}
 	return &providePaymentMethodUseCase{
 		paymentIntentRepository: paymentIntentRepository,
 	}
 }
 
 func (u *providePaymentMethodUseCase) Execute(ctx context.Context, input ProvidePaymentMethodUseCaseInput) (*ProvidePaymentMethodUseCaseOutput, error) {
-	if u == nil {
-		panic("usecase is nil")
-	}
-	if u.paymentIntentRepository == nil {
-		return nil, errors.New("paymentIntentRepository is nil")
-	}
-
 	paymentIntent, err := u.paymentIntentRepository.FindBy(ctx, input.PaymentIntentID)
 	if err != nil {
 		return nil, err
