@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/converter"
 	iarepo "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/repository"
 	iasvc "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/service"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/usecase"
@@ -60,21 +61,28 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, paymentIntentOutput)
 	assert.Len(t, paymentIntentRepo.Events(), 1)
+	paymentIntentView, err := converter.ToPaymentIntentView(paymentIntentOutput.PaymentIntent)
+	assert.NoError(t, err)
 
 	// select payment method
 	selectPaymentMethod := usecase.NewSelectPaymentMethodUseCase(paymentIntentRepo)
 	selectPaymentMethodOutput, err := selectPaymentMethod.Execute(ctx, usecase.SelectPaymentMethodUseCaseInput{
 		PaymentIntentID:   paymentIntentOutput.PaymentIntentID,
-		PaymentMethodType: paymentIntentOutput.PaymentMethodTypes[0],
+		PaymentMethodType: paymentIntentView.PaymentMethodTypes[0],
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, selectPaymentMethodOutput)
 	assert.Len(t, paymentIntentRepo.Events(), 2)
+	selectedPaymentIntent, err := paymentIntentRepo.FindBy(ctx, paymentIntentOutput.PaymentIntentID)
+	assert.NoError(t, err)
+	assert.NotNil(t, selectedPaymentIntent)
+	selectedView, err := converter.ToPaymentIntentView(*selectedPaymentIntent)
+	assert.NoError(t, err)
 
 	providePaymentMethod := usecase.NewProvidePaymentMethodUseCase(paymentIntentRepo)
 	providePaymentMethodOutput, err := providePaymentMethod.Execute(ctx, usecase.ProvidePaymentMethodUseCaseInput{
-		PaymentIntentID:   selectPaymentMethodOutput.PaymentIntentID,
-		PaymentMethodType: selectPaymentMethodOutput.PaymentMethodType,
+		PaymentIntentID:   selectedView.ID,
+		PaymentMethodType: selectedView.PaymentMethodType,
 		Card: &domain.PaymentMethodCard{
 			Number:   "4242424242424242",
 			ExpYear:  25,
@@ -88,7 +96,9 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	latestPaymentIntent, err := paymentIntentRepo.FindBy(ctx, paymentIntentOutput.PaymentIntentID)
 	assert.NoError(t, err)
 	assert.NotNil(t, latestPaymentIntent)
-	assert.IsType(t, domain.PaymentIntentRequiresConfirmation{}, *latestPaymentIntent)
+	latestView, err := converter.ToPaymentIntentView(*latestPaymentIntent)
+	assert.NoError(t, err)
+	assert.Equal(t, "requires_confirmation", latestView.Status)
 
 	// issue confirmation tokens from each domain
 	paymentToken := usecase.NewIssuePaymentTokenUseCase(tokenService)
