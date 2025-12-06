@@ -8,10 +8,10 @@ type (
 	PaymentIntent interface {
 		RequirePaymentMethod(PaymentMethodType) (PaymentIntentEvent, PaymentIntent, error)
 		RequireConfirmation(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
-		RequireAction(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
-		RequireCapture(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
-		StartProcessing(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
-		Complete(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
+		RequireAction() (PaymentIntentEvent, PaymentIntent, error)
+		RequireCapture() (PaymentIntentEvent, PaymentIntent, error)
+		StartProcessing() (PaymentIntentEvent, PaymentIntent, error)
+		Complete() (PaymentIntentEvent, PaymentIntent, error)
 	}
 
 	paymentIntentMeta struct {
@@ -36,18 +36,18 @@ func (p paymentIntentMeta) RequireConfirmation(method PaymentMethod) (PaymentInt
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 
-func (p paymentIntentMeta) RequireAction(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p paymentIntentMeta) RequireAction() (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 
-func (p paymentIntentMeta) RequireCapture(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p paymentIntentMeta) RequireCapture() (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 
-func (p paymentIntentMeta) StartProcessing(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p paymentIntentMeta) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 
-func (p paymentIntentMeta) Complete(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p paymentIntentMeta) Complete() (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }

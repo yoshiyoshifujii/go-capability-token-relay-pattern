@@ -102,4 +102,20 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	latestView, err := converter.ToPaymentIntentView(*latestPaymentIntent)
 	assert.NoError(t, err)
 	assert.Equal(t, "requires_confirmation", latestView.Status)
+
+	confirmPaymentIntent := usecase.NewConfirmPaymentIntentUseCase(paymentIntentRepo)
+	confirmPaymentIntentOutput, err := confirmPaymentIntent.Execute(ctx, usecase.ConfirmPaymentIntentUseCaseInput{
+		PaymentIntentID: paymentIntentOutput.PaymentIntentID,
+		CaptureMethod:   domain.PaymentCaptureMethodManual,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, confirmPaymentIntentOutput)
+	assert.Len(t, paymentIntentRepo.Events(), 4)
+
+	confirmedPaymentIntent, err := paymentIntentRepo.FindBy(ctx, paymentIntentOutput.PaymentIntentID)
+	assert.NoError(t, err)
+	assert.NotNil(t, confirmedPaymentIntent)
+	confirmedView, err := converter.ToPaymentIntentView(*confirmedPaymentIntent)
+	assert.NoError(t, err)
+	assert.Equal(t, "requires_capture", confirmedView.Status)
 }

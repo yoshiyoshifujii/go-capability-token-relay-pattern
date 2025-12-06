@@ -19,6 +19,16 @@ type (
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 	}
+
+	PaymentIntentRequiresCapture struct {
+		paymentIntentMeta
+		PaymentMethod PaymentMethod
+	}
+
+	PaymentIntentProcessing struct {
+		paymentIntentMeta
+		PaymentMethod PaymentMethod
+	}
 )
 
 func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (PaymentIntentEvent, PaymentIntent, error) {
@@ -92,6 +102,54 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 			SeqNr: seqNr,
 		},
 		PaymentMethod: method,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresConfirmation) RequireCapture() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentRequiresCaptureEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+	}
+
+	aggregate := PaymentIntentRequiresCapture{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresConfirmation) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentProcessingEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+	}
+
+	aggregate := PaymentIntentProcessing{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
 	}
 
 	return event, aggregate, nil
