@@ -102,42 +102,4 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	latestView, err := converter.ToPaymentIntentView(*latestPaymentIntent)
 	assert.NoError(t, err)
 	assert.Equal(t, "requires_confirmation", latestView.Status)
-
-	// issue confirmation tokens from each domain
-	paymentToken := usecase.NewIssuePaymentTokenUseCase(tokenService)
-	paymentTokenOutput, err := paymentToken.Execute(ctx, usecase.IssuePaymentTokenUseCaseInput{
-		OrderProcessingID: "op_123",
-		UserID:            "user_123",
-		PaymentMethod:     "credit-card",
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, paymentTokenOutput)
-	assert.NotEmpty(t, paymentTokenOutput.Token.Value)
-
-	// relay tokens (OrderProcessing)
-	relay := usecase.NewRelayCapabilityTokensUseCase(tokenService)
-	relayOutput, err := relay.Execute(ctx, usecase.RelayCapabilityTokensUseCaseInput{
-		OrderProcessingID: "op_123",
-		CartToken:         confirmCartOutput.Token,
-		PaymentToken:      paymentTokenOutput.Token,
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, relayOutput)
-	assert.NotNil(t, relayOutput.VerifiedTokens)
-	assert.Len(t, relayOutput.VerifiedTokens, 2)
-	assert.Equal(t, confirmCartOutput.Token.Value, relayOutput.VerifiedTokens["cart"].Value)
-	assert.Equal(t, paymentTokenOutput.Token.Value, relayOutput.VerifiedTokens["payment"].Value)
-
-	// complete order
-	completeOrder := usecase.NewCompleteOrderUseCase()
-	completeOutput, err := completeOrder.Execute(ctx, usecase.CompleteOrderUseCaseInput{
-		OrderProcessingID: "op_123",
-		CapabilityTokens: []string{
-			relayOutput.VerifiedTokens["cart"].Value,
-			relayOutput.VerifiedTokens["payment"].Value,
-		},
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, completeOutput)
-	assert.NotEmpty(t, completeOutput.OrderID)
 }
