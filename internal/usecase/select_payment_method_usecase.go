@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/repository"
 )
 
@@ -36,7 +37,17 @@ func NewSelectPaymentMethodUseCase(paymentIntentRepository repository.PaymentInt
 	}
 }
 
+func (i SelectPaymentMethodUseCaseInput) Validate() error {
+	contract.AssertValidatable(i.PaymentIntentID)
+	if i.PaymentMethodType == "" {
+		return errors.New("payment method type is empty")
+	}
+	return nil
+}
+
 func (u *selectPaymentMethodUseCase) Execute(ctx context.Context, input SelectPaymentMethodUseCaseInput) (*SelectPaymentMethodUseCaseOutput, error) {
+	contract.AssertValidatable(input)
+
 	paymentIntent, err := u.paymentIntentRepository.FindBy(ctx, input.PaymentIntentID)
 	if err != nil {
 		return nil, err

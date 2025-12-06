@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 )
@@ -34,3 +35,10 @@ type (
 		RelayTokens(context.Context, RelayTokensInput) (map[string]SignedToken, error)
 	}
 )
+
+func (s SignedToken) Validate() error {
+	if s.Value == "" {
+		return errors.New("signed token is empty")
+	}
+	return nil
+}

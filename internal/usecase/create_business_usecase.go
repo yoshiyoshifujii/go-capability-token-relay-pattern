@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
@@ -45,7 +47,20 @@ func NewCreateBusinessUseCase(
 	}
 }
 
+func (i CreateBusinessUseCaseInput) Validate() error {
+	if len(i.BusinessID) == 0 {
+		return errors.New("business id is empty")
+	}
+	if len(i.Name) == 0 {
+		return errors.New("business name is empty")
+	}
+	contract.AssertValidatable(i.PaymentMethodTypes)
+	return nil
+}
+
 func (u *createBusinessUseCase) Execute(ctx context.Context, input CreateBusinessUseCaseInput) (*CreateBusinessUseCaseOutput, error) {
+	contract.AssertValidatable(input)
+
 	businessID, err := u.businessIDGenerator.GenerateID(ctx)
 	if err != nil {
 		return nil, err

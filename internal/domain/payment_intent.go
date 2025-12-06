@@ -1,5 +1,7 @@
 package domain
 
+import "errors"
+
 type (
 	PaymentIntentID string
 
@@ -18,6 +20,13 @@ type (
 		Version uint8
 	}
 )
+
+func (p PaymentIntentID) Validate() error {
+	if len(p) == 0 {
+		return errors.New("invalid payment intent id")
+	}
+	return nil
+}
 
 func (p paymentIntentMeta) RequirePaymentMethod(methodType PaymentMethodType) (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")

@@ -35,9 +35,14 @@ func NewCreateCartUseCase(cartIDGenerator service.CartIDGenerator) CreateCartUse
 	}
 }
 
+func (i CreateCartUseCaseInput) Validate() error {
+	contract.AssertValidatable(i.BusinessID)
+	contract.AssertValidatable(i.Items)
+	return nil
+}
+
 func (u *createCartUseCase) Execute(ctx context.Context, input CreateCartUseCaseInput) (*CreateCartUseCaseOutput, error) {
-	contract.AssertValidatable(input.BusinessID)
-	contract.AssertValidatable(input.Items)
+	contract.AssertValidatable(input)
 
 	cartID, err := u.cartIDGenerator.GenerateID(ctx)
 	if err != nil {

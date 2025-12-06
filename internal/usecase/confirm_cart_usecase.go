@@ -35,8 +35,13 @@ func NewConfirmCartUseCase(tokenService service.TokenService) ConfirmCartUseCase
 	}
 }
 
+func (i ConfirmCartUseCaseInput) Validate() error {
+	contract.AssertValidatable(i.Cart)
+	return nil
+}
+
 func (u *confirmCartUseCase) Execute(ctx context.Context, input ConfirmCartUseCaseInput) (*ConfirmCartUseCaseOutput, error) {
-	contract.AssertValidatable(input.Cart)
+	contract.AssertValidatable(input)
 
 	token, err := u.tokenService.ConfirmCartToken(ctx, service.ConfirmCartTokenInput{
 		Cart: input.Cart,

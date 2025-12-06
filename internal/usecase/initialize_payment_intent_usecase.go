@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/repository"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 )
@@ -57,7 +58,14 @@ func NewInitializePaymentIntentUseCase(
 	}
 }
 
+func (i InitializePaymentIntentUseCaseInput) Validate() error {
+	contract.AssertValidatable(i.CartToken)
+	return nil
+}
+
 func (u *initializePaymentIntentUseCase) Execute(ctx context.Context, input InitializePaymentIntentUseCaseInput) (*InitializePaymentIntentUseCaseOutput, error) {
+	contract.AssertValidatable(input)
+
 	cart, err := u.tokenService.ParseCartToken(ctx, input.CartToken)
 	if err != nil {
 		return nil, err

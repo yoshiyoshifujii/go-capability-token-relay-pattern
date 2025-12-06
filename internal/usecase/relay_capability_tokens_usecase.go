@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 )
 
@@ -35,7 +37,18 @@ func NewRelayCapabilityTokensUseCase(tokenService service.TokenService) RelayCap
 	}
 }
 
+func (i RelayCapabilityTokensUseCaseInput) Validate() error {
+	if i.OrderProcessingID == "" {
+		return errors.New("orderProcessingID is empty")
+	}
+	contract.AssertValidatable(i.CartToken)
+	contract.AssertValidatable(i.PaymentToken)
+	return nil
+}
+
 func (u *relayCapabilityTokensUseCase) Execute(ctx context.Context, input RelayCapabilityTokensUseCaseInput) (*RelayCapabilityTokensUseCaseOutput, error) {
+	contract.AssertValidatable(input)
+
 	verified, err := u.tokenService.RelayTokens(ctx, service.RelayTokensInput{
 		OrderProcessingID: input.OrderProcessingID,
 		CartToken:         input.CartToken.Value,
