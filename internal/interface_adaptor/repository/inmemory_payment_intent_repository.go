@@ -38,8 +38,6 @@ func (i *InMemoryPaymentIntentRepository) Events() []domain.PaymentIntentEvent {
 
 func paymentIntentID(intent domain.PaymentIntent) domain.PaymentIntentID {
 	switch v := intent.(type) {
-	case domain.PaymentIntentInitialized:
-		return v.ID
 	case domain.PaymentIntentRequiresPaymentMethodType:
 		return v.ID
 	default:

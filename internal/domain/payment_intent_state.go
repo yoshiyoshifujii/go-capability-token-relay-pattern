@@ -1,22 +1,18 @@
 package domain
 
 type (
-	PaymentIntentInitialized struct {
-		paymentIntentMeta
-	}
-
 	PaymentIntentRequiresPaymentMethodType struct {
 		paymentIntentMeta
 		PaymentMethodTypes PaymentMethodTypes
 	}
 )
 
-func (p PaymentIntentInitialized) RequirePaymentMethodTypes(types PaymentMethodTypes) (PaymentIntentEvent, PaymentIntent, error) {
-	seqNr := p.SeqNr + 1
+func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (PaymentIntentEvent, PaymentIntent, error) {
+	seqNr := uint8(1)
 
 	event := PaymentIntentRequiresPaymentMethodTypeEvent{
 		paymentIntentEventMeta: paymentIntentEventMeta{
-			PaymentIntentID: p.ID,
+			PaymentIntentID: id,
 			SeqNr:           seqNr,
 		},
 		PaymentMethodTypes: types,
@@ -24,7 +20,7 @@ func (p PaymentIntentInitialized) RequirePaymentMethodTypes(types PaymentMethodT
 
 	aggregate := PaymentIntentRequiresPaymentMethodType{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
+			ID:    id,
 			SeqNr: seqNr,
 		},
 		PaymentMethodTypes: types,

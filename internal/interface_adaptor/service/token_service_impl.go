@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 )
@@ -33,4 +34,14 @@ func (s *tokenServiceImpl) ConfirmCartToken(ctx context.Context, input service.C
 			len(input.Cart.Items),
 		),
 	}, nil
+}
+
+func (s *tokenServiceImpl) ValidateCartToken(ctx context.Context, token service.SignedToken) error {
+	if len(token.Value) == 0 {
+		return fmt.Errorf("cart token is empty")
+	}
+	if !strings.HasPrefix(token.Value, "cart-token:") {
+		return fmt.Errorf("invalid cart token")
+	}
+	return nil
 }

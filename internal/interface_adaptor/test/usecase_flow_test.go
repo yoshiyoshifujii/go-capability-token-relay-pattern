@@ -15,8 +15,10 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	ctx := t.Context()
 	tokenService := iasvc.NewTokenService()
 	businessRepo := iarepo.NewInMemoryBusinessRepository()
+	paymentIntentRepo := iarepo.NewInMemoryPaymentIntentRepository()
 	businessIDGenerator := iasvc.NewFakeBusinessIDGenerator(domain.NewBusinessID("biz_123"))
 	cartIDGenerator := iasvc.NewFakeCartIDGenerator(domain.NewCartID("cart_123"))
+	paymentIntentIDGenerator := iasvc.NewFakePaymentIntentIDGenerator(domain.PaymentIntentID("pi_123"))
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
@@ -48,6 +50,16 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, confirmCartOutput)
 	assert.NotEmpty(t, confirmCartOutput.Token.Value)
+
+	// initialize payment intent
+	initializePaymentIntent := usecase.NewInitializePaymentIntentUseCase(tokenService, paymentIntentRepo, paymentIntentIDGenerator)
+	paymentIntentOutput, err := initializePaymentIntent.Execute(ctx, usecase.InitializePaymentIntentUseCaseInput{
+		CartToken:          confirmCartOutput.Token,
+		PaymentMethodTypes: domain.PaymentMethodTypes{domain.PaymentMethodTypeCard},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, paymentIntentOutput)
+	assert.Len(t, paymentIntentRepo.Events(), 1)
 
 	// issue confirmation tokens from each domain
 	paymentToken := usecase.NewIssuePaymentTokenUseCase(tokenService)

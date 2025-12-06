@@ -17,4 +17,8 @@ type (
 	CartIDGenerator interface {
 		IDGenerator[domain.CartID]
 	}
+
+	PaymentIDGenerator interface {
+		IDGenerator[domain.PaymentIntentID]
+	}
 )

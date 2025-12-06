@@ -30,6 +30,7 @@ type (
 	TokenService interface {
 		IssuePaymentToken(context.Context, IssuePaymentTokenInput) (SignedToken, error)
 		ConfirmCartToken(context.Context, ConfirmCartTokenInput) (SignedToken, error)
+		ValidateCartToken(context.Context, SignedToken) error
 		RelayTokens(context.Context, RelayTokensInput) (map[string]SignedToken, error)
 	}
 )
