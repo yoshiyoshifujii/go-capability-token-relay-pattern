@@ -3,16 +3,17 @@ package service
 import (
 	"context"
 
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 )
 
 type paymentMethodProviderServiceImpl struct {
-	next service.PaymentConfirmationNext
+	next domain.PaymentConfirmationNext
 }
 
-func NewPaymentMethodProviderService(next service.PaymentConfirmationNext) service.PaymentMethodProviderService {
+func NewPaymentMethodProviderService(next domain.PaymentConfirmationNext) service.PaymentMethodProviderService {
 	if next == "" {
-		next = service.PaymentConfirmationNextProcessing
+		next = domain.PaymentConfirmationNextProcessing
 	}
 	return &paymentMethodProviderServiceImpl{next: next}
 }

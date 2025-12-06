@@ -9,7 +9,6 @@ import (
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/converter"
 	iarepo "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/repository"
 	iasvc "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/service"
-	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/usecase"
 )
 
@@ -21,7 +20,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	tokenService := iasvc.NewTokenService()
 	paymentIntentRepo := iarepo.NewInMemoryPaymentIntentRepository()
 	paymentIntentIDGenerator := iasvc.NewFakePaymentIntentIDGenerator(domain.PaymentIntentID("pi_123"))
-	paymentProvider := iasvc.NewPaymentMethodProviderService(service.PaymentConfirmationNextRequiresAction)
+	paymentProvider := iasvc.NewPaymentMethodProviderService(domain.PaymentConfirmationNextRequiresAction)
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
@@ -120,4 +119,20 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	confirmedView, err := converter.ToPaymentIntentView(*confirmedPaymentIntent)
 	assert.NoError(t, err)
 	assert.Equal(t, "requires_action", confirmedView.Status)
+
+	// webhook after user completed 3DS action
+	handleActionResult := usecase.NewHandlePaymentActionResultUseCase(paymentIntentRepo)
+	handleActionResultOutput, err := handleActionResult.Execute(ctx, usecase.HandlePaymentActionResultUseCaseInput{
+		PaymentIntentID: paymentIntentOutput.PaymentIntentID,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, handleActionResultOutput)
+	assert.Len(t, paymentIntentRepo.Events(), 5)
+
+	actionHandledIntent, err := paymentIntentRepo.FindBy(ctx, paymentIntentOutput.PaymentIntentID)
+	assert.NoError(t, err)
+	assert.NotNil(t, actionHandledIntent)
+	actionHandledView, err := converter.ToPaymentIntentView(*actionHandledIntent)
+	assert.NoError(t, err)
+	assert.Equal(t, "requires_capture", actionHandledView.Status)
 }

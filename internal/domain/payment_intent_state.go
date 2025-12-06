@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"errors"
+
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
 )
 
@@ -155,6 +157,7 @@ func (p PaymentIntentRequiresConfirmation) RequireCapture() (PaymentIntentEvent,
 			SeqNr:           seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
 	}
 
 	aggregate := PaymentIntentRequiresCapture{
@@ -180,6 +183,7 @@ func (p PaymentIntentRequiresConfirmation) StartProcessing() (PaymentIntentEvent
 			SeqNr:           seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
 	}
 
 	aggregate := PaymentIntentProcessing{
@@ -192,4 +196,80 @@ func (p PaymentIntentRequiresConfirmation) StartProcessing() (PaymentIntentEvent
 	}
 
 	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresConfirmation) ApplyConfirmationResult(next PaymentConfirmationNext) (PaymentIntentEvent, PaymentIntent, error) {
+	switch next {
+	case PaymentConfirmationNextProcessing:
+		return p.StartProcessing()
+	case PaymentConfirmationNextRequiresAction:
+		return p.RequireAction()
+	case PaymentConfirmationNextRequiresCapture:
+		return p.RequireCapture()
+	default:
+		panic("invalid payment confirmation next")
+	}
+}
+
+func (p PaymentIntentRequiresAction) RequireCapture() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	if p.CaptureMethod != PaymentCaptureMethodManual {
+		return nil, nil, errors.New("capture method must be manual to require capture after action")
+	}
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentRequiresCaptureEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+	}
+
+	aggregate := PaymentIntentRequiresCapture{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresAction) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	switch p.CaptureMethod {
+	case PaymentCaptureMethodManual:
+		return p.RequireCapture()
+	case PaymentCaptureMethodAutomatic:
+		seqNr := p.SeqNr + 1
+
+		event := PaymentIntentProcessingEvent{
+			paymentIntentEventMeta: paymentIntentEventMeta{
+				PaymentIntentID: p.ID,
+				SeqNr:           seqNr,
+			},
+			PaymentMethod: p.PaymentMethod,
+			CaptureMethod: p.CaptureMethod,
+		}
+
+		aggregate := PaymentIntentProcessing{
+			paymentIntentMeta: paymentIntentMeta{
+				ID:    p.ID,
+				SeqNr: seqNr,
+			},
+			PaymentMethod: p.PaymentMethod,
+			CaptureMethod: p.CaptureMethod,
+		}
+
+		return event, aggregate, nil
+	default:
+		panic("invalid capture method")
+	}
 }

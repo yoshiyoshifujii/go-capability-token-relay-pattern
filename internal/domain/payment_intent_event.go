@@ -34,11 +34,13 @@ type (
 	PaymentIntentRequiresCaptureEvent struct {
 		paymentIntentEventMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentProcessingEvent struct {
 		paymentIntentEventMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentCompleteEvent struct {

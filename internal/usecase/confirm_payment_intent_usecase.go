@@ -74,27 +74,12 @@ func (u *confirmPaymentIntentUseCase) Execute(ctx context.Context, input Confirm
 		return nil, err
 	}
 
-	var (
-		event     domain.PaymentIntentEvent
-		aggregate domain.PaymentIntent
-	)
-
-	switch result.NextStatus {
-	case service.PaymentConfirmationNextProcessing:
-		event, aggregate, err = intent.StartProcessing()
-	case service.PaymentConfirmationNextRequiresAction:
-		event, aggregate, err = intent.RequireAction()
-	case service.PaymentConfirmationNextRequiresCapture:
-		event, aggregate, err = intent.RequireCapture()
-	default:
-		panic("unexpected payment intent status")
-	}
-
+	event, aggregate, err := intent.ApplyConfirmationResult(result.NextStatus)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := u.paymentIntentRepository.Save(ctx, event, aggregate); err != nil {
+	if err = u.paymentIntentRepository.Save(ctx, event, aggregate); err != nil {
 		return nil, err
 	}
 
