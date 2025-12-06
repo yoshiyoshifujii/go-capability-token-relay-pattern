@@ -13,6 +13,7 @@ type PaymentIntentView struct {
 	PaymentMethodTypes domain.PaymentMethodTypes
 	PaymentMethodType  domain.PaymentMethodType
 	PaymentMethod      domain.PaymentMethod
+	CaptureMethod      domain.PaymentCaptureMethod
 }
 
 func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error) {
@@ -37,6 +38,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			SeqNr:         v.SeqNr,
 			Status:        "requires_confirmation",
 			PaymentMethod: v.PaymentMethod,
+			CaptureMethod: v.CaptureMethod,
 		}, nil
 	case domain.PaymentIntentRequiresAction:
 		return PaymentIntentView{
@@ -44,6 +46,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			SeqNr:         v.SeqNr,
 			Status:        "requires_action",
 			PaymentMethod: v.PaymentMethod,
+			CaptureMethod: v.CaptureMethod,
 		}, nil
 	case domain.PaymentIntentRequiresCapture:
 		return PaymentIntentView{
@@ -51,6 +54,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			SeqNr:         v.SeqNr,
 			Status:        "requires_capture",
 			PaymentMethod: v.PaymentMethod,
+			CaptureMethod: v.CaptureMethod,
 		}, nil
 	case domain.PaymentIntentProcessing:
 		return PaymentIntentView{
@@ -58,6 +62,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			SeqNr:         v.SeqNr,
 			Status:        "processing",
 			PaymentMethod: v.PaymentMethod,
+			CaptureMethod: v.CaptureMethod,
 		}, nil
 	default:
 		return PaymentIntentView{}, fmt.Errorf("unsupported payment intent state %T", intent)

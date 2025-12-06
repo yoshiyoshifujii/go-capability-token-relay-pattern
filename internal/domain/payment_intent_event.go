@@ -23,6 +23,7 @@ type (
 	PaymentIntentRequiresConfirmationEvent struct {
 		paymentIntentEventMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentRequiresActionEvent struct {

@@ -13,7 +13,6 @@ import (
 type (
 	ConfirmPaymentIntentUseCaseInput struct {
 		PaymentIntentID domain.PaymentIntentID
-		CaptureMethod   domain.PaymentCaptureMethod
 	}
 
 	ConfirmPaymentIntentUseCaseOutput struct {
@@ -49,7 +48,6 @@ func NewConfirmPaymentIntentUseCase(
 
 func (i ConfirmPaymentIntentUseCaseInput) Validate() error {
 	contract.AssertValidatable(i.PaymentIntentID)
-	contract.AssertValidatable(i.CaptureMethod)
 	return nil
 }
 
@@ -70,8 +68,7 @@ func (u *confirmPaymentIntentUseCase) Execute(ctx context.Context, input Confirm
 	}
 
 	result, err := u.paymentProvider.ConfirmPaymentMethod(ctx, service.PaymentConfirmationRequest{
-		Intent:        intent,
-		CaptureMethod: input.CaptureMethod,
+		Intent: intent,
 	})
 	if err != nil {
 		return nil, err

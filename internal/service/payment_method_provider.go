@@ -10,8 +10,7 @@ type (
 	PaymentConfirmationNext string
 
 	PaymentConfirmationRequest struct {
-		Intent        domain.PaymentIntentRequiresConfirmation
-		CaptureMethod domain.PaymentCaptureMethod
+		Intent domain.PaymentIntentRequiresConfirmation
 	}
 
 	PaymentConfirmationResult struct {

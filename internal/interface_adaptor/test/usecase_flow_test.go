@@ -21,7 +21,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	tokenService := iasvc.NewTokenService()
 	paymentIntentRepo := iarepo.NewInMemoryPaymentIntentRepository()
 	paymentIntentIDGenerator := iasvc.NewFakePaymentIntentIDGenerator(domain.PaymentIntentID("pi_123"))
-	paymentProvider := iasvc.NewPaymentMethodProviderService(service.PaymentConfirmationNextRequiresCapture)
+	paymentProvider := iasvc.NewPaymentMethodProviderService(service.PaymentConfirmationNextRequiresAction)
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
@@ -84,6 +84,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	providePaymentMethod := usecase.NewProvidePaymentMethodUseCase(paymentIntentRepo)
 	providePaymentMethodOutput, err := providePaymentMethod.Execute(ctx, usecase.ProvidePaymentMethodUseCaseInput{
 		PaymentIntentID: selectedView.ID,
+		CaptureMethod:   domain.PaymentCaptureMethodManual,
 		PaymentMethod: domain.NewPaymentMethod(
 			selectedView.PaymentMethodType,
 			&domain.PaymentMethodCard{
@@ -108,7 +109,6 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	confirmPaymentIntent := usecase.NewConfirmPaymentIntentUseCase(paymentIntentRepo, paymentProvider)
 	confirmPaymentIntentOutput, err := confirmPaymentIntent.Execute(ctx, usecase.ConfirmPaymentIntentUseCaseInput{
 		PaymentIntentID: paymentIntentOutput.PaymentIntentID,
-		CaptureMethod:   domain.PaymentCaptureMethodManual,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, confirmPaymentIntentOutput)
@@ -119,5 +119,5 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NotNil(t, confirmedPaymentIntent)
 	confirmedView, err := converter.ToPaymentIntentView(*confirmedPaymentIntent)
 	assert.NoError(t, err)
-	assert.Equal(t, "requires_capture", confirmedView.Status)
+	assert.Equal(t, "requires_action", confirmedView.Status)
 }

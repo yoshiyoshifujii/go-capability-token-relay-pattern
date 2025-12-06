@@ -7,7 +7,7 @@ type (
 
 	PaymentIntent interface {
 		RequirePaymentMethod(PaymentMethodType) (PaymentIntentEvent, PaymentIntent, error)
-		RequireConfirmation(PaymentMethod) (PaymentIntentEvent, PaymentIntent, error)
+		RequireConfirmation(PaymentMethod, PaymentCaptureMethod) (PaymentIntentEvent, PaymentIntent, error)
 		RequireAction() (PaymentIntentEvent, PaymentIntent, error)
 		RequireCapture() (PaymentIntentEvent, PaymentIntent, error)
 		StartProcessing() (PaymentIntentEvent, PaymentIntent, error)
@@ -32,7 +32,7 @@ func (p paymentIntentMeta) RequirePaymentMethod(methodType PaymentMethodType) (P
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 
-func (p paymentIntentMeta) RequireConfirmation(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p paymentIntentMeta) RequireConfirmation(method PaymentMethod, captureMethod PaymentCaptureMethod) (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }
 

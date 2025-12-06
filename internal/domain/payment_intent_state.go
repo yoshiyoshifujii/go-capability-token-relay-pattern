@@ -18,21 +18,25 @@ type (
 	PaymentIntentRequiresConfirmation struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentRequiresAction struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentRequiresCapture struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 
 	PaymentIntentProcessing struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
+		CaptureMethod PaymentCaptureMethod
 	}
 )
 
@@ -84,8 +88,9 @@ func (p PaymentIntentRequiresPaymentMethodType) RequirePaymentMethod(methodType 
 	return event, aggregate, nil
 }
 
-func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
+func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMethod, captureMethod PaymentCaptureMethod) (PaymentIntentEvent, PaymentIntent, error) {
 	contract.AssertValidatable(method)
+	contract.AssertValidatable(captureMethod)
 
 	if method.PaymentMethodType != p.PaymentMethodType {
 		panic("payment method type is not allowed")
@@ -99,6 +104,7 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 			SeqNr:           seqNr,
 		},
 		PaymentMethod: method,
+		CaptureMethod: captureMethod,
 	}
 
 	aggregate := PaymentIntentRequiresConfirmation{
@@ -107,6 +113,7 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 			SeqNr: seqNr,
 		},
 		PaymentMethod: method,
+		CaptureMethod: captureMethod,
 	}
 
 	return event, aggregate, nil
@@ -131,6 +138,7 @@ func (p PaymentIntentRequiresConfirmation) RequireAction() (PaymentIntentEvent, 
 			SeqNr: seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
 	}
 
 	return event, aggregate, nil
@@ -155,6 +163,7 @@ func (p PaymentIntentRequiresConfirmation) RequireCapture() (PaymentIntentEvent,
 			SeqNr: seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
 	}
 
 	return event, aggregate, nil
@@ -179,6 +188,7 @@ func (p PaymentIntentRequiresConfirmation) StartProcessing() (PaymentIntentEvent
 			SeqNr: seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
 	}
 
 	return event, aggregate, nil

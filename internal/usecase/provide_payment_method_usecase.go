@@ -13,6 +13,7 @@ type (
 	ProvidePaymentMethodUseCaseInput struct {
 		PaymentIntentID domain.PaymentIntentID
 		PaymentMethod   domain.PaymentMethod
+		CaptureMethod   domain.PaymentCaptureMethod
 	}
 
 	ProvidePaymentMethodUseCaseOutput struct {
@@ -41,6 +42,7 @@ func NewProvidePaymentMethodUseCase(paymentIntentRepository repository.PaymentIn
 func (i ProvidePaymentMethodUseCaseInput) Validate() error {
 	contract.AssertValidatable(i.PaymentIntentID)
 	contract.AssertValidatable(i.PaymentMethod)
+	contract.AssertValidatable(i.CaptureMethod)
 	return nil
 }
 
@@ -55,7 +57,7 @@ func (u *providePaymentMethodUseCase) Execute(ctx context.Context, input Provide
 		return nil, errors.New("payment intent not found")
 	}
 
-	event, aggregate, err := (*paymentIntent).RequireConfirmation(input.PaymentMethod)
+	event, aggregate, err := (*paymentIntent).RequireConfirmation(input.PaymentMethod, input.CaptureMethod)
 	if err != nil {
 		return nil, err
 	}
