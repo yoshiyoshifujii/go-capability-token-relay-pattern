@@ -18,6 +18,7 @@ type (
 		ID      PaymentIntentID
 		SeqNr   uint8
 		Version uint8
+		Amount  Money
 	}
 )
 

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
@@ -29,7 +30,7 @@ func (s *tokenServiceImpl) RelayTokens(ctx context.Context, input service.RelayT
 func (s *tokenServiceImpl) ConfirmCartToken(ctx context.Context, input service.ConfirmCartTokenInput) (service.SignedToken, error) {
 	items := make([]string, len(input.Cart.Items))
 	for i, item := range input.Cart.Items {
-		items[i] = string(item)
+		items[i] = fmt.Sprintf("%s=%d", item.ItemID, item.Price)
 	}
 	return service.SignedToken{
 		Value: fmt.Sprintf(
@@ -62,12 +63,26 @@ func (s *tokenServiceImpl) ParseCartToken(ctx context.Context, token service.Sig
 	}
 
 	itemStrings := strings.Split(itemPart, "|")
-	items := make([]domain.ItemID, 0, len(itemStrings))
+	items := make([]domain.CartItem, 0, len(itemStrings))
 	for _, item := range itemStrings {
 		if len(item) == 0 {
 			continue
 		}
-		items = append(items, domain.ItemID(item))
+
+		parts := strings.SplitN(item, "=", 2)
+		if len(parts) != 2 {
+			return domain.Cart{}, fmt.Errorf("invalid cart item format")
+		}
+
+		price, err := strconv.ParseUint(parts[1], 10, 8)
+		if err != nil {
+			return domain.Cart{}, fmt.Errorf("invalid cart item price: %w", err)
+		}
+
+		items = append(items, domain.CartItem{
+			ItemID: domain.ItemID(parts[0]),
+			Price:  domain.ItemPrice(price),
+		})
 	}
 
 	cartItems := domain.CartItems(items)

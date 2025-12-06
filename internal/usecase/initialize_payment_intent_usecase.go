@@ -85,7 +85,7 @@ func (u *initializePaymentIntentUseCase) Execute(ctx context.Context, input Init
 		return nil, err
 	}
 
-	event, aggregate, err := domain.GeneratePaymentIntent(paymentIntentID, business.PaymentMethodTypes)
+	event, aggregate, err := domain.GeneratePaymentIntent(paymentIntentID, business.PaymentMethodTypes, cart.CalculateAmount())
 	if err != nil {
 		return nil, err
 	}

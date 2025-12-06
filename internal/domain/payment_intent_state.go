@@ -10,44 +10,51 @@ type (
 	PaymentIntentRequiresPaymentMethodType struct {
 		paymentIntentMeta
 		PaymentMethodTypes PaymentMethodTypes
+		Amount             Money
 	}
 
 	PaymentIntentRequiresPaymentMethod struct {
 		paymentIntentMeta
 		PaymentMethodType PaymentMethodType
+		Amount            Money
 	}
 
 	PaymentIntentRequiresConfirmation struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 		CaptureMethod PaymentCaptureMethod
+		Amount        Money
 	}
 
 	PaymentIntentRequiresAction struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 		CaptureMethod PaymentCaptureMethod
+		Amount        Money
 	}
 
 	PaymentIntentRequiresCapture struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 		CaptureMethod PaymentCaptureMethod
+		Amount        Money
 	}
 
 	PaymentIntentProcessing struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 		CaptureMethod PaymentCaptureMethod
+		Amount        Money
 	}
 
 	PaymentIntentSucceeded struct {
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
+		Amount        Money
 	}
 )
 
-func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (PaymentIntentEvent, PaymentIntent, error) {
+func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes, amount Money) (PaymentIntentEvent, PaymentIntent, error) {
 	seqNr := uint8(1)
 
 	event := PaymentIntentRequiresPaymentMethodTypeEvent{
@@ -56,14 +63,17 @@ func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (Paymen
 			SeqNr:           seqNr,
 		},
 		PaymentMethodTypes: types,
+		Amount:             amount,
 	}
 
 	aggregate := PaymentIntentRequiresPaymentMethodType{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    id,
-			SeqNr: seqNr,
+			ID:     id,
+			SeqNr:  seqNr,
+			Amount: amount,
 		},
 		PaymentMethodTypes: types,
+		Amount:             amount,
 	}
 
 	return event, aggregate, nil
@@ -82,14 +92,17 @@ func (p PaymentIntentRequiresPaymentMethodType) RequirePaymentMethod(methodType 
 			SeqNr:           seqNr,
 		},
 		PaymentMethodType: methodType,
+		Amount:            p.Amount,
 	}
 
 	aggregate := PaymentIntentRequiresPaymentMethod{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethodType: methodType,
+		Amount:            p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -112,15 +125,18 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 		},
 		PaymentMethod: method,
 		CaptureMethod: captureMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentRequiresConfirmation{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: method,
 		CaptureMethod: captureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -137,15 +153,18 @@ func (p PaymentIntentRequiresConfirmation) RequireAction() (PaymentIntentEvent, 
 			SeqNr:           seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentRequiresAction{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -167,15 +186,18 @@ func (p PaymentIntentRequiresConfirmation) RequireCapture() (PaymentIntentEvent,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentRequiresCapture{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -193,15 +215,18 @@ func (p PaymentIntentRequiresConfirmation) StartProcessing() (PaymentIntentEvent
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentProcessing{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -236,15 +261,18 @@ func (p PaymentIntentRequiresAction) RequireCapture() (PaymentIntentEvent, Payme
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentRequiresCapture{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -266,15 +294,18 @@ func (p PaymentIntentRequiresAction) StartProcessing() (PaymentIntentEvent, Paym
 			},
 			PaymentMethod: p.PaymentMethod,
 			CaptureMethod: p.CaptureMethod,
+			Amount:        p.Amount,
 		}
 
 		aggregate := PaymentIntentProcessing{
 			paymentIntentMeta: paymentIntentMeta{
-				ID:    p.ID,
-				SeqNr: seqNr,
+				ID:     p.ID,
+				SeqNr:  seqNr,
+				Amount: p.Amount,
 			},
 			PaymentMethod: p.PaymentMethod,
 			CaptureMethod: p.CaptureMethod,
+			Amount:        p.Amount,
 		}
 
 		return event, aggregate, nil
@@ -299,15 +330,18 @@ func (p PaymentIntentRequiresCapture) StartProcessing() (PaymentIntentEvent, Pay
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentProcessing{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil
@@ -324,14 +358,17 @@ func (p PaymentIntentProcessing) Complete() (PaymentIntentEvent, PaymentIntent, 
 			SeqNr:           seqNr,
 		},
 		PaymentMethod: p.PaymentMethod,
+		Amount:        p.Amount,
 	}
 
 	aggregate := PaymentIntentSucceeded{
 		paymentIntentMeta: paymentIntentMeta{
-			ID:    p.ID,
-			SeqNr: seqNr,
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
 		},
 		PaymentMethod: p.PaymentMethod,
+		Amount:        p.Amount,
 	}
 
 	return event, aggregate, nil

@@ -1,5 +1,7 @@
 package domain
 
+import "errors"
+
 type (
 	ItemID string
 
@@ -27,4 +29,11 @@ func NewItem(
 		Name:       name,
 		Price:      price,
 	}
+}
+
+func (i ItemID) Validate() error {
+	if len(i) == 0 {
+		return errors.New("invalid item id")
+	}
+	return nil
 }

@@ -8,7 +8,12 @@ import (
 type (
 	CartID string
 
-	CartItems []ItemID
+	CartItem struct {
+		ItemID ItemID
+		Price  ItemPrice
+	}
+
+	CartItems []CartItem
 
 	Cart struct {
 		BusinessID BusinessID
@@ -31,7 +36,14 @@ func (c CartID) Validate() error {
 	return nil
 }
 
-func NewCartItems(items ...ItemID) CartItems {
+func (c CartItem) Validate() error {
+	if err := c.ItemID.Validate(); err != nil {
+		return err
+	}
+	return Money(c.Price).Validate()
+}
+
+func NewCartItems(items ...CartItem) CartItems {
 	if len(items) == 0 {
 		panic("invalid cartItems")
 	}
@@ -41,6 +53,11 @@ func NewCartItems(items ...ItemID) CartItems {
 func (c CartItems) Validate() error {
 	if len(c) == 0 {
 		return errors.New("invalid cartItems")
+	}
+	for _, item := range c {
+		if err := item.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -72,4 +89,12 @@ func (c Cart) Validate() error {
 		return err
 	}
 	return nil
+}
+
+func (c Cart) CalculateAmount() Money {
+	var total Money
+	for _, item := range c.Items {
+		total += Money(item.Price)
+	}
+	return total
 }

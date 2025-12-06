@@ -9,6 +9,7 @@ import (
 type (
 	PaymentConfirmationRequest struct {
 		Intent domain.PaymentIntentRequiresConfirmation
+		Amount domain.Money
 	}
 
 	PaymentConfirmationResult struct {
@@ -17,6 +18,7 @@ type (
 
 	PaymentCaptureRequest struct {
 		Intent domain.PaymentIntentRequiresCapture
+		Amount domain.Money
 	}
 
 	PaymentMethodProviderService interface {

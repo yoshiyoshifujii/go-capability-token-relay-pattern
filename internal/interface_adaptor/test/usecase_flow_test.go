@@ -38,7 +38,12 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	createCart := usecase.NewCreateCartUseCase(cartIDGenerator)
 	createCartOutput, err := createCart.Execute(ctx, usecase.CreateCartUseCaseInput{
 		BusinessID: businessOutput.Business.ID,
-		Items:      domain.NewCartItems(domain.ItemID("item_123")),
+		Items: domain.NewCartItems(
+			domain.CartItem{
+				ItemID: domain.ItemID("item_123"),
+				Price:  domain.ItemPrice(120),
+			},
+		),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, createCartOutput)

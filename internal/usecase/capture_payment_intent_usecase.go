@@ -67,10 +67,10 @@ func (u *capturePaymentIntentUseCase) Execute(ctx context.Context, input Capture
 		return nil, errors.New("payment intent not ready for capture")
 	}
 
-	err = u.paymentProvider.CapturePaymentIntent(ctx, service.PaymentCaptureRequest{
+	if err = u.paymentProvider.CapturePaymentIntent(ctx, service.PaymentCaptureRequest{
 		Intent: intent,
-	})
-	if err != nil {
+		Amount: intent.Amount,
+	}); err != nil {
 		return nil, err
 	}
 

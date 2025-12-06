@@ -69,6 +69,7 @@ func (u *confirmPaymentIntentUseCase) Execute(ctx context.Context, input Confirm
 
 	result, err := u.paymentProvider.ConfirmPaymentMethod(ctx, service.PaymentConfirmationRequest{
 		Intent: intent,
+		Amount: intent.Amount,
 	})
 	if err != nil {
 		return nil, err

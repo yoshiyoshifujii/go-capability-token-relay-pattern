@@ -10,6 +10,7 @@ type PaymentIntentView struct {
 	ID                 domain.PaymentIntentID
 	SeqNr              uint8
 	Status             string
+	Amount             domain.Money
 	PaymentMethodTypes domain.PaymentMethodTypes
 	PaymentMethodType  domain.PaymentMethodType
 	PaymentMethod      domain.PaymentMethod
@@ -23,6 +24,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:                 v.ID,
 			SeqNr:              v.SeqNr,
 			Status:             "requires_payment_method_type",
+			Amount:             v.Amount,
 			PaymentMethodTypes: v.PaymentMethodTypes,
 		}, nil
 	case domain.PaymentIntentRequiresPaymentMethod:
@@ -30,6 +32,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:                v.ID,
 			SeqNr:             v.SeqNr,
 			Status:            "requires_payment_method",
+			Amount:            v.Amount,
 			PaymentMethodType: v.PaymentMethodType,
 		}, nil
 	case domain.PaymentIntentRequiresConfirmation:
@@ -37,6 +40,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:            v.ID,
 			SeqNr:         v.SeqNr,
 			Status:        "requires_confirmation",
+			Amount:        v.Amount,
 			PaymentMethod: v.PaymentMethod,
 			CaptureMethod: v.CaptureMethod,
 		}, nil
@@ -45,6 +49,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:            v.ID,
 			SeqNr:         v.SeqNr,
 			Status:        "requires_action",
+			Amount:        v.Amount,
 			PaymentMethod: v.PaymentMethod,
 			CaptureMethod: v.CaptureMethod,
 		}, nil
@@ -53,6 +58,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:            v.ID,
 			SeqNr:         v.SeqNr,
 			Status:        "requires_capture",
+			Amount:        v.Amount,
 			PaymentMethod: v.PaymentMethod,
 			CaptureMethod: v.CaptureMethod,
 		}, nil
@@ -61,6 +67,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:            v.ID,
 			SeqNr:         v.SeqNr,
 			Status:        "processing",
+			Amount:        v.Amount,
 			PaymentMethod: v.PaymentMethod,
 			CaptureMethod: v.CaptureMethod,
 		}, nil
@@ -69,6 +76,7 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			ID:            v.ID,
 			SeqNr:         v.SeqNr,
 			Status:        "succeeded",
+			Amount:        v.Amount,
 			PaymentMethod: v.PaymentMethod,
 		}, nil
 	default:
