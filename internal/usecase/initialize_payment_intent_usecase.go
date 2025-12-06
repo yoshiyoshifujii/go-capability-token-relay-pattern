@@ -11,8 +11,7 @@ import (
 
 type (
 	InitializePaymentIntentUseCaseInput struct {
-		CartToken          service.SignedToken
-		PaymentMethodTypes domain.PaymentMethodTypes
+		CartToken service.SignedToken
 	}
 
 	InitializePaymentIntentUseCaseOutput struct {
@@ -27,6 +26,7 @@ type (
 		tokenService            service.TokenService
 		paymentIntentRepository repository.PaymentIntentRepository
 		paymentIntentGenerator  service.PaymentIDGenerator
+		businessRepository      repository.BusinessRepository
 	}
 )
 
@@ -34,11 +34,13 @@ func NewInitializePaymentIntentUseCase(
 	tokenService service.TokenService,
 	paymentIntentRepository repository.PaymentIntentRepository,
 	paymentIntentGenerator service.PaymentIDGenerator,
+	businessRepository repository.BusinessRepository,
 ) InitializePaymentIntentUseCase {
 	return &initializePaymentIntentUseCase{
 		tokenService:            tokenService,
 		paymentIntentRepository: paymentIntentRepository,
 		paymentIntentGenerator:  paymentIntentGenerator,
+		businessRepository:      businessRepository,
 	}
 }
 
@@ -55,9 +57,21 @@ func (u *initializePaymentIntentUseCase) Execute(ctx context.Context, input Init
 	if u.paymentIntentGenerator == nil {
 		return nil, errors.New("paymentIntentGenerator is nil")
 	}
+	if u.businessRepository == nil {
+		return nil, errors.New("businessRepository is nil")
+	}
 
-	if err := u.tokenService.ValidateCartToken(ctx, input.CartToken); err != nil {
+	cart, err := u.tokenService.ParseCartToken(ctx, input.CartToken)
+	if err != nil {
 		return nil, err
+	}
+
+	business, err := u.businessRepository.FindBy(ctx, cart.BusinessID)
+	if err != nil {
+		return nil, err
+	}
+	if business == nil {
+		return nil, errors.New("business not found")
 	}
 
 	paymentIntentID, err := u.paymentIntentGenerator.GenerateID(ctx)
@@ -65,7 +79,7 @@ func (u *initializePaymentIntentUseCase) Execute(ctx context.Context, input Init
 		return nil, err
 	}
 
-	event, aggregate, err := domain.GeneratePaymentIntent(paymentIntentID, input.PaymentMethodTypes)
+	event, aggregate, err := domain.GeneratePaymentIntent(paymentIntentID, business.PaymentMethodTypes)
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,8 @@ type (
 
 	BusinessInitializedEvent struct {
 		businessEventMeta
-		BusinessName string
+		BusinessName       string
+		PaymentMethodTypes PaymentMethodTypes
 	}
 )
 
@@ -24,13 +25,15 @@ func NewBusinessInitializedEvent(
 	businessID BusinessID,
 	seqNr uint64,
 	businessName string,
+	paymentMethodTypes PaymentMethodTypes,
 ) BusinessInitializedEvent {
 	return BusinessInitializedEvent{
 		businessEventMeta: businessEventMeta{
 			BusinessID: businessID,
 			SeqNr:      seqNr,
 		},
-		BusinessName: businessName,
+		BusinessName:       businessName,
+		PaymentMethodTypes: paymentMethodTypes,
 	}
 }
 

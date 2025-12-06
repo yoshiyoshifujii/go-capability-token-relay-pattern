@@ -11,8 +11,9 @@ import (
 
 type (
 	CreateBusinessUseCaseInput struct {
-		BusinessID string
-		Name       string
+		BusinessID         string
+		Name               string
+		PaymentMethodTypes domain.PaymentMethodTypes
 	}
 
 	CreateBusinessUseCaseOutput struct {
@@ -56,10 +57,12 @@ func (u *createBusinessUseCase) Execute(ctx context.Context, input CreateBusines
 		businessID,
 		1,
 		input.Name,
+		input.PaymentMethodTypes,
 	)
 	business := domain.NewBusiness(
 		businessID,
 		input.Name,
+		input.PaymentMethodTypes,
 	)
 
 	err = u.businessRepository.Save(ctx, businessEvent, business)

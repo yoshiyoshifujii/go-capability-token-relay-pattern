@@ -23,8 +23,9 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
 	businessOutput, err := createBusiness.Execute(ctx, usecase.CreateBusinessUseCaseInput{
-		BusinessID: "biz_123",
-		Name:       "Test Business",
+		BusinessID:         "biz_123",
+		Name:               "Test Business",
+		PaymentMethodTypes: domain.PaymentMethodTypes{domain.PaymentMethodTypeCard},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, businessOutput)
@@ -52,10 +53,9 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NotEmpty(t, confirmCartOutput.Token.Value)
 
 	// initialize payment intent
-	initializePaymentIntent := usecase.NewInitializePaymentIntentUseCase(tokenService, paymentIntentRepo, paymentIntentIDGenerator)
+	initializePaymentIntent := usecase.NewInitializePaymentIntentUseCase(tokenService, paymentIntentRepo, paymentIntentIDGenerator, businessRepo)
 	paymentIntentOutput, err := initializePaymentIntent.Execute(ctx, usecase.InitializePaymentIntentUseCaseInput{
-		CartToken:          confirmCartOutput.Token,
-		PaymentMethodTypes: domain.PaymentMethodTypes{domain.PaymentMethodTypeCard},
+		CartToken: confirmCartOutput.Token,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, paymentIntentOutput)

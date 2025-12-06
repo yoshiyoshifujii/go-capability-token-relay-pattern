@@ -9,8 +9,9 @@ type (
 	BusinessID string
 
 	Business struct {
-		ID   BusinessID
-		Name string
+		ID                 BusinessID
+		Name               string
+		PaymentMethodTypes PaymentMethodTypes
 	}
 )
 
@@ -28,13 +29,16 @@ func (b BusinessID) Validate() error {
 	return nil
 }
 
-func NewBusiness(id BusinessID, name string) Business {
+func NewBusiness(id BusinessID, name string, paymentMethodTypes PaymentMethodTypes) Business {
 	contract.AssertValidatable(id)
 	if len(name) == 0 {
 		panic("invalid business name")
 	}
+	contract.AssertValidatable(paymentMethodTypes)
+
 	return Business{
-		ID:   id,
-		Name: name,
+		ID:                 id,
+		Name:               name,
+		PaymentMethodTypes: paymentMethodTypes,
 	}
 }
