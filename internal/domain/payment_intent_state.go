@@ -1,6 +1,8 @@
 package domain
 
-import "errors"
+import (
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
+)
 
 type (
 	PaymentIntentRequiresPaymentMethodType struct {
@@ -43,7 +45,7 @@ func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (Paymen
 
 func (p PaymentIntentRequiresPaymentMethodType) RequirePaymentMethod(methodType PaymentMethodType) (PaymentIntentEvent, PaymentIntent, error) {
 	if !p.PaymentMethodTypes.Contains(methodType) {
-		return nil, nil, errors.New("payment method type is not allowed")
+		panic("payment method type not found in payment methods")
 	}
 
 	seqNr := p.SeqNr + 1
@@ -68,21 +70,10 @@ func (p PaymentIntentRequiresPaymentMethodType) RequirePaymentMethod(methodType 
 }
 
 func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMethod) (PaymentIntentEvent, PaymentIntent, error) {
-	if method.PaymentMethodType != p.PaymentMethodType {
-		return nil, nil, errors.New("payment method type mismatch")
-	}
+	contract.AssertValidatable(method)
 
-	switch method.PaymentMethodType {
-	case PaymentMethodTypeCard:
-		if method.Card == nil {
-			return nil, nil, errors.New("card payment method requires card details")
-		}
-	case PaymentMethodTypePayPay:
-		if method.PayPay == nil {
-			return nil, nil, errors.New("paypay payment method requires paypay details")
-		}
-	default:
-		return nil, nil, errors.New("unsupported payment method type")
+	if method.PaymentMethodType != p.PaymentMethodType {
+		panic("payment method type is not allowed")
 	}
 
 	seqNr := p.SeqNr + 1

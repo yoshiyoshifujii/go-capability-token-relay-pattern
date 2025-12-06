@@ -16,9 +16,8 @@ type (
 	}
 
 	SelectPaymentMethodUseCaseOutput struct {
-		PaymentIntentID   domain.PaymentIntentID
-		PaymentIntent     domain.PaymentIntent
-		PaymentMethodType domain.PaymentMethodType
+		PaymentIntentID domain.PaymentIntentID
+		PaymentIntent   domain.PaymentIntent
 	}
 
 	SelectPaymentMethodUseCase interface {
@@ -41,9 +40,7 @@ func NewSelectPaymentMethodUseCase(paymentIntentRepository repository.PaymentInt
 
 func (i SelectPaymentMethodUseCaseInput) Validate() error {
 	contract.AssertValidatable(i.PaymentIntentID)
-	if i.PaymentMethodType == "" {
-		return errors.New("payment method type is empty")
-	}
+	contract.AssertValidatable(i.PaymentMethodType)
 	return nil
 }
 
@@ -68,8 +65,7 @@ func (u *selectPaymentMethodUseCase) Execute(ctx context.Context, input SelectPa
 	}
 
 	return &SelectPaymentMethodUseCaseOutput{
-		PaymentIntentID:   input.PaymentIntentID,
-		PaymentIntent:     aggregate,
-		PaymentMethodType: input.PaymentMethodType,
+		PaymentIntentID: input.PaymentIntentID,
+		PaymentIntent:   aggregate,
 	}, nil
 }

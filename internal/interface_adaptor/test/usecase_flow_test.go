@@ -81,13 +81,16 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 
 	providePaymentMethod := usecase.NewProvidePaymentMethodUseCase(paymentIntentRepo)
 	providePaymentMethodOutput, err := providePaymentMethod.Execute(ctx, usecase.ProvidePaymentMethodUseCaseInput{
-		PaymentIntentID:   selectedView.ID,
-		PaymentMethodType: selectedView.PaymentMethodType,
-		Card: &domain.PaymentMethodCard{
-			Number:   "4242424242424242",
-			ExpYear:  25,
-			ExpMonth: 12,
-		},
+		PaymentIntentID: selectedView.ID,
+		PaymentMethod: domain.NewPaymentMethod(
+			selectedView.PaymentMethodType,
+			&domain.PaymentMethodCard{
+				Number:   "4242424242424242",
+				ExpYear:  25,
+				ExpMonth: 12,
+			},
+			nil,
+		),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, providePaymentMethodOutput)

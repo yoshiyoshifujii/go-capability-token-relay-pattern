@@ -13,6 +13,13 @@ const (
 	PaymentMethodTypePayPay PaymentMethodType = "paypay"
 )
 
+func (p PaymentMethodType) Validate() error {
+	if p == "" {
+		return errors.New("payment method type is empty")
+	}
+	return nil
+}
+
 func (p PaymentMethodTypes) Validate() error {
 	if len(p) == 0 {
 		return errors.New("payment_method_types must not be empty")

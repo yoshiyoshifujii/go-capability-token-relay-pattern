@@ -11,10 +11,8 @@ import (
 
 type (
 	ProvidePaymentMethodUseCaseInput struct {
-		PaymentIntentID   domain.PaymentIntentID
-		PaymentMethodType domain.PaymentMethodType
-		Card              *domain.PaymentMethodCard
-		PayPay            *domain.PaymentMethodPayPay
+		PaymentIntentID domain.PaymentIntentID
+		PaymentMethod   domain.PaymentMethod
 	}
 
 	ProvidePaymentMethodUseCaseOutput struct {
@@ -42,21 +40,7 @@ func NewProvidePaymentMethodUseCase(paymentIntentRepository repository.PaymentIn
 
 func (i ProvidePaymentMethodUseCaseInput) Validate() error {
 	contract.AssertValidatable(i.PaymentIntentID)
-	if i.PaymentMethodType == "" {
-		return errors.New("payment method type is empty")
-	}
-	switch i.PaymentMethodType {
-	case domain.PaymentMethodTypeCard:
-		if i.Card == nil {
-			return errors.New("card details are required for card payment method")
-		}
-	case domain.PaymentMethodTypePayPay:
-		if i.PayPay == nil {
-			return errors.New("paypay details are required for paypay payment method")
-		}
-	default:
-		return errors.New("unsupported payment method type")
-	}
+	contract.AssertValidatable(i.PaymentMethod)
 	return nil
 }
 
@@ -71,13 +55,7 @@ func (u *providePaymentMethodUseCase) Execute(ctx context.Context, input Provide
 		return nil, errors.New("payment intent not found")
 	}
 
-	method := domain.PaymentMethod{
-		PaymentMethodType: input.PaymentMethodType,
-		Card:              input.Card,
-		PayPay:            input.PayPay,
-	}
-
-	event, aggregate, err := (*paymentIntent).RequireConfirmation(method)
+	event, aggregate, err := (*paymentIntent).RequireConfirmation(input.PaymentMethod)
 	if err != nil {
 		return nil, err
 	}
