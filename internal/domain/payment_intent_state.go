@@ -40,6 +40,11 @@ type (
 		PaymentMethod PaymentMethod
 		CaptureMethod PaymentCaptureMethod
 	}
+
+	PaymentIntentSucceeded struct {
+		paymentIntentMeta
+		PaymentMethod PaymentMethod
+	}
 )
 
 func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (PaymentIntentEvent, PaymentIntent, error) {
@@ -303,6 +308,30 @@ func (p PaymentIntentRequiresCapture) StartProcessing() (PaymentIntentEvent, Pay
 		},
 		PaymentMethod: p.PaymentMethod,
 		CaptureMethod: p.CaptureMethod,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentProcessing) Complete() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentCompleteEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+	}
+
+	aggregate := PaymentIntentSucceeded{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
 	}
 
 	return event, aggregate, nil

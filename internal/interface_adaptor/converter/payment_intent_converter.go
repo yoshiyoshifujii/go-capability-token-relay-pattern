@@ -64,6 +64,13 @@ func ToPaymentIntentView(intent domain.PaymentIntent) (PaymentIntentView, error)
 			PaymentMethod: v.PaymentMethod,
 			CaptureMethod: v.CaptureMethod,
 		}, nil
+	case domain.PaymentIntentSucceeded:
+		return PaymentIntentView{
+			ID:            v.ID,
+			SeqNr:         v.SeqNr,
+			Status:        "succeeded",
+			PaymentMethod: v.PaymentMethod,
+		}, nil
 	default:
 		return PaymentIntentView{}, fmt.Errorf("unsupported payment intent state %T", intent)
 	}
