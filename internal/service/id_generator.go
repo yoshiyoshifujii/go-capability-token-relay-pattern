@@ -13,4 +13,8 @@ type (
 	BusinessIDGenerator interface {
 		IDGenerator[domain.BusinessID]
 	}
+
+	CartIDGenerator interface {
+		IDGenerator[domain.CartID]
+	}
 )

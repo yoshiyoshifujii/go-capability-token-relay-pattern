@@ -16,6 +16,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	tokenService := iasvc.NewTokenService()
 	businessRepo := iarepo.NewInMemoryBusinessRepository()
 	businessIDGenerator := iasvc.NewFakeBusinessIDGenerator(domain.NewBusinessID("biz_123"))
+	cartIDGenerator := iasvc.NewFakeCartIDGenerator(domain.NewCartID("cart_123"))
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
@@ -29,10 +30,15 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.Len(t, businessRepo.Events, 1)
 
 	// create cart
-	createCart := usecase.NewCreateCartUseCase()
-	createCartOutput, err := createCart.Execute(ctx, usecase.CreateCartUseCaseInput{})
+	createCart := usecase.NewCreateCartUseCase(cartIDGenerator)
+	createCartOutput, err := createCart.Execute(ctx, usecase.CreateCartUseCaseInput{
+		BusinessID: businessOutput.Business.ID,
+		Items:      domain.NewCartItems(domain.ItemID("item_123")),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, createCartOutput)
+	assert.Equal(t, domain.CartID("cart_123"), createCartOutput.Cart.CartID)
+	assert.Equal(t, businessOutput.Business.ID, createCartOutput.Cart.BusinessID)
 
 	// issue confirmation tokens from each domain
 	couponToken := usecase.NewIssueCouponTokenUseCase(tokenService)
