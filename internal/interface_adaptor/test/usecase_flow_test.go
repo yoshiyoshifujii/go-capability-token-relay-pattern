@@ -27,7 +27,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, businessOutput)
 	assert.Equal(t, "biz_123", string(businessOutput.Business.ID))
-	assert.Len(t, businessRepo.Events, 1)
+	assert.Len(t, businessRepo.Events(), 1)
 
 	// create cart
 	createCart := usecase.NewCreateCartUseCase(cartIDGenerator)

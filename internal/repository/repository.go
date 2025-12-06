@@ -14,4 +14,8 @@ type (
 	BusinessRepository interface {
 		Repository[domain.BusinessID, domain.Business, domain.BusinessEvent]
 	}
+
+	PaymentIntentRepository interface {
+		Repository[domain.PaymentIntentID, domain.PaymentIntent, domain.PaymentIntentEvent]
+	}
 )
