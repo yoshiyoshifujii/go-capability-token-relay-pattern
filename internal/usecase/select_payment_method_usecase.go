@@ -55,7 +55,12 @@ func (u *selectPaymentMethodUseCase) Execute(ctx context.Context, input SelectPa
 		return nil, errors.New("payment intent not found")
 	}
 
-	event, aggregate, err := (*paymentIntent).RequirePaymentMethod(input.PaymentMethodType)
+	intent, ok := (*paymentIntent).(domain.PaymentIntentRequiresPaymentMethodType)
+	if !ok {
+		return nil, errors.New("payment intent not ready for payment method selection")
+	}
+
+	event, aggregate, err := intent.RequirePaymentMethod(input.PaymentMethodType)
 	if err != nil {
 		return nil, err
 	}
