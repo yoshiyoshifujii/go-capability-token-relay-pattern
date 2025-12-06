@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/repository"
@@ -23,22 +24,33 @@ type (
 	}
 
 	createBusinessUseCase struct {
-		businessRepository repository.BusinessRepository
+		businessIDGenerator service.BusinessIDGenerator
+		businessRepository  repository.BusinessRepository
 	}
 )
 
-func NewCreateBusinessUseCase(businessRepository repository.BusinessRepository) CreateBusinessUseCase {
+func NewCreateBusinessUseCase(
+	businessIDGenerator service.BusinessIDGenerator,
+	businessRepository repository.BusinessRepository,
+) CreateBusinessUseCase {
 	return &createBusinessUseCase{
-		businessRepository: businessRepository,
+		businessIDGenerator: businessIDGenerator,
+		businessRepository:  businessRepository,
 	}
 }
 
 func (u *createBusinessUseCase) Execute(ctx context.Context, input CreateBusinessUseCaseInput) (*CreateBusinessUseCaseOutput, error) {
+	if u.businessIDGenerator == nil {
+		return nil, errors.New("businessIDGenerator is nil")
+	}
 	if u.businessRepository == nil {
 		return nil, errors.New("businessRepository is nil")
 	}
 
-	businessID := domain.NewBusinessID(input.BusinessID)
+	businessID, err := u.businessIDGenerator.GenerateID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	businessEvent := domain.NewBusinessInitializedEvent(
 		businessID,
@@ -50,7 +62,7 @@ func (u *createBusinessUseCase) Execute(ctx context.Context, input CreateBusines
 		input.Name,
 	)
 
-	err := u.businessRepository.Save(ctx, businessEvent, business)
+	err = u.businessRepository.Save(ctx, businessEvent, business)
 	if err != nil {
 		return nil, err
 	}

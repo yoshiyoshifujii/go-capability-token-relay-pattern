@@ -5,18 +5,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	iarepo "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/repository"
-	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
+	iasvc "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/service"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/usecase"
 )
 
 func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	ctx := t.Context()
-	tokenService := service.NewTokenService()
+	tokenService := iasvc.NewTokenService()
 	businessRepo := iarepo.NewInMemoryBusinessRepository()
+	businessIDGenerator := iasvc.NewFakeBusinessIDGenerator(domain.NewBusinessID("biz_123"))
 
 	// create business
-	createBusiness := usecase.NewCreateBusinessUseCase(businessRepo)
+	createBusiness := usecase.NewCreateBusinessUseCase(businessIDGenerator, businessRepo)
 	businessOutput, err := createBusiness.Execute(ctx, usecase.CreateBusinessUseCaseInput{
 		BusinessID: "biz_123",
 		Name:       "Test Business",
