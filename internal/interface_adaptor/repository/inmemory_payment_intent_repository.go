@@ -17,10 +17,10 @@ func NewInMemoryPaymentIntentRepository() *InMemoryPaymentIntentRepository {
 }
 
 func (i *InMemoryPaymentIntentRepository) FindBy(ctx context.Context, aggregateID domain.PaymentIntentID) (*domain.PaymentIntent, error) {
-	for _, entity := range i.store.Entities {
+	for idx := len(i.store.Entities) - 1; idx >= 0; idx-- {
+		entity := i.store.Entities[idx]
 		if paymentIntentID(entity) == aggregateID {
-			e := entity
-			return &e, nil
+			return &entity, nil
 		}
 	}
 	return nil, nil
@@ -39,6 +39,8 @@ func (i *InMemoryPaymentIntentRepository) Events() []domain.PaymentIntentEvent {
 func paymentIntentID(intent domain.PaymentIntent) domain.PaymentIntentID {
 	switch v := intent.(type) {
 	case domain.PaymentIntentRequiresPaymentMethodType:
+		return v.ID
+	case domain.PaymentIntentRequiresPaymentMethod:
 		return v.ID
 	default:
 		panic("unsupported payment intent aggregate for in-memory repository")

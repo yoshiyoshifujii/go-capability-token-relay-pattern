@@ -18,3 +18,12 @@ func (p PaymentMethodTypes) Validate() error {
 	}
 	return nil
 }
+
+func (p PaymentMethodTypes) Contains(methodType PaymentMethodType) bool {
+	for _, t := range p {
+		if t == methodType {
+			return true
+		}
+	}
+	return false
+}
