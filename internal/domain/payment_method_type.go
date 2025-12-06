@@ -9,7 +9,8 @@ type (
 )
 
 const (
-	PaymentMethodTypeCard PaymentMethodType = "card"
+	PaymentMethodTypeCard   PaymentMethodType = "card"
+	PaymentMethodTypePayPay PaymentMethodType = "paypay"
 )
 
 func (p PaymentMethodTypes) Validate() error {

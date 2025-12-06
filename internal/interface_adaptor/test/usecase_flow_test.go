@@ -71,10 +71,24 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NotNil(t, selectPaymentMethodOutput)
 	assert.Len(t, paymentIntentRepo.Events(), 2)
 
+	providePaymentMethod := usecase.NewProvidePaymentMethodUseCase(paymentIntentRepo)
+	providePaymentMethodOutput, err := providePaymentMethod.Execute(ctx, usecase.ProvidePaymentMethodUseCaseInput{
+		PaymentIntentID:   paymentIntentOutput.PaymentIntentID,
+		PaymentMethodType: domain.PaymentMethodTypeCard,
+		Card: &domain.PaymentMethodCard{
+			Number:   "4242424242424242",
+			ExpYear:  25,
+			ExpMonth: 12,
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, providePaymentMethodOutput)
+	assert.Len(t, paymentIntentRepo.Events(), 3)
+
 	latestPaymentIntent, err := paymentIntentRepo.FindBy(ctx, paymentIntentOutput.PaymentIntentID)
 	assert.NoError(t, err)
 	assert.NotNil(t, latestPaymentIntent)
-	assert.IsType(t, domain.PaymentIntentRequiresPaymentMethod{}, *latestPaymentIntent)
+	assert.IsType(t, domain.PaymentIntentRequiresConfirmation{}, *latestPaymentIntent)
 
 	// issue confirmation tokens from each domain
 	paymentToken := usecase.NewIssuePaymentTokenUseCase(tokenService)
