@@ -14,7 +14,7 @@ type (
 	}
 
 	IssuePaymentTokenUseCaseOutput struct {
-		Token string
+		Token service.SignedToken
 	}
 
 	IssuePaymentTokenUseCase interface {

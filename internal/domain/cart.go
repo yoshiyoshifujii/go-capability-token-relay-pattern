@@ -61,10 +61,7 @@ func NewCart(
 	}
 }
 
-func (c *Cart) Validate() error {
-	if c == nil {
-		return errors.New("invalid cart")
-	}
+func (c Cart) Validate() error {
 	if err := c.BusinessID.Validate(); err != nil {
 		return err
 	}

@@ -9,13 +9,13 @@ import (
 type (
 	RelayCapabilityTokensUseCaseInput struct {
 		OrderProcessingID string
-		CouponToken       string
-		PointsToken       string
-		PaymentToken      string
+		CouponToken       service.SignedToken
+		PointsToken       service.SignedToken
+		PaymentToken      service.SignedToken
 	}
 
 	RelayCapabilityTokensUseCaseOutput struct {
-		VerifiedTokens map[string]string
+		VerifiedTokens map[string]service.SignedToken
 	}
 
 	RelayCapabilityTokensUseCase interface {
@@ -36,9 +36,9 @@ func NewRelayCapabilityTokensUseCase(tokenService service.TokenService) RelayCap
 func (u *relayCapabilityTokensUseCase) Execute(ctx context.Context, input RelayCapabilityTokensUseCaseInput) (*RelayCapabilityTokensUseCaseOutput, error) {
 	verified, err := u.tokenService.RelayTokens(ctx, service.RelayTokensInput{
 		OrderProcessingID: input.OrderProcessingID,
-		CouponToken:       input.CouponToken,
-		PointsToken:       input.PointsToken,
-		PaymentToken:      input.PaymentToken,
+		CouponToken:       input.CouponToken.Value,
+		PointsToken:       input.PointsToken.Value,
+		PaymentToken:      input.PaymentToken.Value,
 	})
 	if err != nil {
 		return nil, err

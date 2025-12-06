@@ -40,6 +40,15 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.Equal(t, domain.CartID("cart_123"), createCartOutput.Cart.CartID)
 	assert.Equal(t, businessOutput.Business.ID, createCartOutput.Cart.BusinessID)
 
+	// confirm cart token
+	confirmCart := usecase.NewConfirmCartUseCase(tokenService)
+	confirmCartOutput, err := confirmCart.Execute(ctx, usecase.ConfirmCartUseCaseInput{
+		Cart: createCartOutput.Cart,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, confirmCartOutput)
+	assert.NotEmpty(t, confirmCartOutput.Token.Value)
+
 	// issue confirmation tokens from each domain
 	couponToken := usecase.NewIssueCouponTokenUseCase(tokenService)
 	couponTokenOutput, err := couponToken.Execute(ctx, usecase.IssueCouponTokenUseCaseInput{
@@ -49,7 +58,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, couponTokenOutput)
-	assert.NotEmpty(t, couponTokenOutput.Token)
+	assert.NotEmpty(t, couponTokenOutput.Token.Value)
 
 	pointsToken := usecase.NewIssuePointsTokenUseCase(tokenService)
 	pointsTokenOutput, err := pointsToken.Execute(ctx, usecase.IssuePointsTokenUseCaseInput{
@@ -59,7 +68,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, pointsTokenOutput)
-	assert.NotEmpty(t, pointsTokenOutput.Token)
+	assert.NotEmpty(t, pointsTokenOutput.Token.Value)
 
 	paymentToken := usecase.NewIssuePaymentTokenUseCase(tokenService)
 	paymentTokenOutput, err := paymentToken.Execute(ctx, usecase.IssuePaymentTokenUseCaseInput{
@@ -69,7 +78,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, paymentTokenOutput)
-	assert.NotEmpty(t, paymentTokenOutput.Token)
+	assert.NotEmpty(t, paymentTokenOutput.Token.Value)
 
 	// relay tokens (OrderProcessing)
 	relay := usecase.NewRelayCapabilityTokensUseCase(tokenService)
@@ -83,15 +92,18 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NotNil(t, relayOutput)
 	assert.NotNil(t, relayOutput.VerifiedTokens)
 	assert.Len(t, relayOutput.VerifiedTokens, 3)
+	assert.Equal(t, couponTokenOutput.Token.Value, relayOutput.VerifiedTokens["coupon"].Value)
+	assert.Equal(t, pointsTokenOutput.Token.Value, relayOutput.VerifiedTokens["points"].Value)
+	assert.Equal(t, paymentTokenOutput.Token.Value, relayOutput.VerifiedTokens["payment"].Value)
 
 	// complete order
 	completeOrder := usecase.NewCompleteOrderUseCase()
 	completeOutput, err := completeOrder.Execute(ctx, usecase.CompleteOrderUseCaseInput{
 		OrderProcessingID: "op_123",
 		CapabilityTokens: []string{
-			couponTokenOutput.Token,
-			pointsTokenOutput.Token,
-			paymentTokenOutput.Token,
+			couponTokenOutput.Token.Value,
+			pointsTokenOutput.Token.Value,
+			paymentTokenOutput.Token.Value,
 		},
 	})
 	assert.NoError(t, err)

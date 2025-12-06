@@ -14,7 +14,7 @@ type (
 	}
 
 	IssuePointsTokenUseCaseOutput struct {
-		Token string
+		Token service.SignedToken
 	}
 
 	IssuePointsTokenUseCase interface {

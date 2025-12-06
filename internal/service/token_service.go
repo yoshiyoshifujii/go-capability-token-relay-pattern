@@ -1,8 +1,16 @@
 package service
 
-import "context"
+import (
+	"context"
+
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
+)
 
 type (
+	SignedToken struct {
+		Value string
+	}
+
 	IssueCouponTokenInput struct {
 		OrderProcessingID string
 		UserID            string
@@ -28,10 +36,15 @@ type (
 		PaymentToken      string
 	}
 
+	ConfirmCartTokenInput struct {
+		Cart domain.Cart
+	}
+
 	TokenService interface {
-		IssueCouponToken(context.Context, IssueCouponTokenInput) (string, error)
-		IssuePointsToken(context.Context, IssuePointsTokenInput) (string, error)
-		IssuePaymentToken(context.Context, IssuePaymentTokenInput) (string, error)
-		RelayTokens(context.Context, RelayTokensInput) (map[string]string, error)
+		IssueCouponToken(context.Context, IssueCouponTokenInput) (SignedToken, error)
+		IssuePointsToken(context.Context, IssuePointsTokenInput) (SignedToken, error)
+		IssuePaymentToken(context.Context, IssuePaymentTokenInput) (SignedToken, error)
+		RelayTokens(context.Context, RelayTokensInput) (map[string]SignedToken, error)
+		ConfirmCartToken(context.Context, ConfirmCartTokenInput) (SignedToken, error)
 	}
 )

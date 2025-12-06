@@ -14,7 +14,7 @@ type (
 	}
 
 	IssueCouponTokenUseCaseOutput struct {
-		Token string
+		Token service.SignedToken
 	}
 
 	IssueCouponTokenUseCase interface {
