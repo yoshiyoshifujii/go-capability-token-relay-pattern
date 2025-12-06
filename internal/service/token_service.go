@@ -11,18 +11,6 @@ type (
 		Value string
 	}
 
-	IssueCouponTokenInput struct {
-		OrderProcessingID string
-		UserID            string
-		CouponRef         string
-	}
-
-	IssuePointsTokenInput struct {
-		OrderProcessingID string
-		UserID            string
-		PointsToUse       int64
-	}
-
 	IssuePaymentTokenInput struct {
 		OrderProcessingID string
 		UserID            string
@@ -31,8 +19,7 @@ type (
 
 	RelayTokensInput struct {
 		OrderProcessingID string
-		CouponToken       string
-		PointsToken       string
+		CartToken         string
 		PaymentToken      string
 	}
 
@@ -41,10 +28,8 @@ type (
 	}
 
 	TokenService interface {
-		IssueCouponToken(context.Context, IssueCouponTokenInput) (SignedToken, error)
-		IssuePointsToken(context.Context, IssuePointsTokenInput) (SignedToken, error)
 		IssuePaymentToken(context.Context, IssuePaymentTokenInput) (SignedToken, error)
-		RelayTokens(context.Context, RelayTokensInput) (map[string]SignedToken, error)
 		ConfirmCartToken(context.Context, ConfirmCartTokenInput) (SignedToken, error)
+		RelayTokens(context.Context, RelayTokensInput) (map[string]SignedToken, error)
 	}
 )
