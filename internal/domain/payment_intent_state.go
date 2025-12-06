@@ -277,3 +277,33 @@ func (p PaymentIntentRequiresAction) StartProcessing() (PaymentIntentEvent, Paym
 		panic("invalid capture method")
 	}
 }
+
+func (p PaymentIntentRequiresCapture) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(p.PaymentMethod)
+
+	if p.CaptureMethod != PaymentCaptureMethodManual {
+		return nil, nil, errors.New("capture method must be manual to start processing")
+	}
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentProcessingEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+	}
+
+	aggregate := PaymentIntentProcessing{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:    p.ID,
+			SeqNr: seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+	}
+
+	return event, aggregate, nil
+}

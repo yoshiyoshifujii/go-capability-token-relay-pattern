@@ -1,5 +1,4 @@
 PaymentIntent 後続ユースケース TODO
-- CapturePaymentIntentUseCase: オーソリ済み意図を売上計上し、succeeded / requires_payment_method / canceled へ遷移
 - FailPaymentIntentUseCase: 決済失敗時のイベント記録、requires_payment_method へ戻すか canceled に遷移
 - CancelPaymentIntentUseCase: ユーザー／システム起因のキャンセルで canceled に遷移
 - RefundPaymentIntentUseCase (必要なら): 部分／全額返金を記録し残高管理

@@ -21,3 +21,7 @@ func NewPaymentMethodProviderService(next domain.PaymentConfirmationNext) servic
 func (p *paymentMethodProviderServiceImpl) ConfirmPaymentMethod(ctx context.Context, request service.PaymentConfirmationRequest) (service.PaymentConfirmationResult, error) {
 	return service.PaymentConfirmationResult{NextStatus: p.next}, nil
 }
+
+func (p *paymentMethodProviderServiceImpl) CapturePaymentIntent(ctx context.Context, request service.PaymentCaptureRequest) error {
+	return nil
+}

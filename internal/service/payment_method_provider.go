@@ -15,7 +15,12 @@ type (
 		NextStatus domain.PaymentConfirmationNext
 	}
 
+	PaymentCaptureRequest struct {
+		Intent domain.PaymentIntentRequiresCapture
+	}
+
 	PaymentMethodProviderService interface {
 		ConfirmPaymentMethod(context.Context, PaymentConfirmationRequest) (PaymentConfirmationResult, error)
+		CapturePaymentIntent(context.Context, PaymentCaptureRequest) error
 	}
 )
