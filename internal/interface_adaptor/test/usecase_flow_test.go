@@ -65,7 +65,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	selectPaymentMethod := usecase.NewSelectPaymentMethodUseCase(paymentIntentRepo)
 	selectPaymentMethodOutput, err := selectPaymentMethod.Execute(ctx, usecase.SelectPaymentMethodUseCaseInput{
 		PaymentIntentID:   paymentIntentOutput.PaymentIntentID,
-		PaymentMethodType: domain.PaymentMethodTypeCard,
+		PaymentMethodType: paymentIntentOutput.PaymentMethodTypes[0],
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, selectPaymentMethodOutput)
@@ -73,8 +73,8 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 
 	providePaymentMethod := usecase.NewProvidePaymentMethodUseCase(paymentIntentRepo)
 	providePaymentMethodOutput, err := providePaymentMethod.Execute(ctx, usecase.ProvidePaymentMethodUseCaseInput{
-		PaymentIntentID:   paymentIntentOutput.PaymentIntentID,
-		PaymentMethodType: domain.PaymentMethodTypeCard,
+		PaymentIntentID:   selectPaymentMethodOutput.PaymentIntentID,
+		PaymentMethodType: selectPaymentMethodOutput.PaymentMethodType,
 		Card: &domain.PaymentMethodCard{
 			Number:   "4242424242424242",
 			ExpYear:  25,
@@ -120,8 +120,8 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	completeOutput, err := completeOrder.Execute(ctx, usecase.CompleteOrderUseCaseInput{
 		OrderProcessingID: "op_123",
 		CapabilityTokens: []string{
-			confirmCartOutput.Token.Value,
-			paymentTokenOutput.Token.Value,
+			relayOutput.VerifiedTokens["cart"].Value,
+			relayOutput.VerifiedTokens["payment"].Value,
 		},
 	})
 	assert.NoError(t, err)

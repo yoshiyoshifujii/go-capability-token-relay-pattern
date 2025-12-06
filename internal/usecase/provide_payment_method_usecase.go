@@ -18,7 +18,8 @@ type (
 	}
 
 	ProvidePaymentMethodUseCaseOutput struct {
-		PaymentIntent domain.PaymentIntent
+		PaymentIntentID domain.PaymentIntentID
+		PaymentIntent   domain.PaymentIntent
 	}
 
 	ProvidePaymentMethodUseCase interface {
@@ -86,6 +87,7 @@ func (u *providePaymentMethodUseCase) Execute(ctx context.Context, input Provide
 	}
 
 	return &ProvidePaymentMethodUseCaseOutput{
-		PaymentIntent: aggregate,
+		PaymentIntentID: input.PaymentIntentID,
+		PaymentIntent:   aggregate,
 	}, nil
 }
