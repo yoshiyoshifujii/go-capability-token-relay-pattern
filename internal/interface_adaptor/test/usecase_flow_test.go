@@ -1,12 +1,11 @@
 package test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
+	iarepo "yoshiyoshifujii/go-capability-token-relay-pattern/internal/interface_adaptor/repository"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/usecase"
 )
@@ -14,7 +13,7 @@ import (
 func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	ctx := t.Context()
 	tokenService := service.NewTokenService()
-	businessRepo := newInMemoryBusinessRepository()
+	businessRepo := iarepo.NewInMemoryBusinessRepository()
 
 	// create business
 	createBusiness := usecase.NewCreateBusinessUseCase(businessRepo)
@@ -25,7 +24,7 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, businessOutput)
 	assert.Equal(t, "biz_123", string(businessOutput.Business.ID))
-	assert.Len(t, businessRepo.events, 1)
+	assert.Len(t, businessRepo.Events, 1)
 
 	// create cart
 	createCart := usecase.NewCreateCartUseCase()
@@ -90,31 +89,4 @@ func TestUseCaseFlow_ShouldPassThroughAllStubs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, completeOutput)
 	assert.NotEmpty(t, completeOutput.OrderID)
-}
-
-type inMemoryBusinessRepository struct {
-	events   []domain.BusinessEvent
-	entities []domain.Business
-}
-
-func newInMemoryBusinessRepository() *inMemoryBusinessRepository {
-	return &inMemoryBusinessRepository{
-		events:   make([]domain.BusinessEvent, 0),
-		entities: make([]domain.Business, 0),
-	}
-}
-
-func (i *inMemoryBusinessRepository) FindBy(ctx context.Context, aggregateID domain.BusinessID) (*domain.Business, error) {
-	for _, entity := range i.entities {
-		if entity.ID == aggregateID {
-			return &entity, nil
-		}
-	}
-	return nil, nil
-}
-
-func (i *inMemoryBusinessRepository) Save(ctx context.Context, event domain.BusinessEvent, aggregate domain.Business) error {
-	i.events = append(i.events, event)
-	i.entities = append(i.entities, aggregate)
-	return nil
 }
