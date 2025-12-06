@@ -66,7 +66,7 @@ func GeneratePaymentIntent(id PaymentIntentID, types PaymentMethodTypes) (Paymen
 
 func (p PaymentIntentRequiresPaymentMethodType) RequirePaymentMethod(methodType PaymentMethodType) (PaymentIntentEvent, PaymentIntent, error) {
 	if !p.PaymentMethodTypes.Contains(methodType) {
-		panic("payment method type not found in payment methods")
+		return nil, nil, errors.New("payment method type not found in payment methods")
 	}
 
 	seqNr := p.SeqNr + 1
@@ -95,7 +95,7 @@ func (p PaymentIntentRequiresPaymentMethod) RequireConfirmation(method PaymentMe
 	contract.AssertValidatable(captureMethod)
 
 	if method.PaymentMethodType != p.PaymentMethodType {
-		panic("payment method type is not allowed")
+		return nil, nil, errors.New("payment method type is not allowed")
 	}
 
 	seqNr := p.SeqNr + 1
@@ -148,6 +148,10 @@ func (p PaymentIntentRequiresConfirmation) RequireAction() (PaymentIntentEvent, 
 
 func (p PaymentIntentRequiresConfirmation) RequireCapture() (PaymentIntentEvent, PaymentIntent, error) {
 	contract.AssertValidatable(p.PaymentMethod)
+
+	if p.CaptureMethod != PaymentCaptureMethodManual {
+		return nil, nil, errors.New("capture method must be manual to require capture after confirmation")
+	}
 
 	seqNr := p.SeqNr + 1
 
