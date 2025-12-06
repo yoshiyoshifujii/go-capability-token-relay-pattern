@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 )
@@ -11,7 +12,7 @@ type FakeBusinessIDGenerator struct {
 	Err    error
 }
 
-func NewFakeBusinessIDGenerator(nextID domain.BusinessID) *FakeBusinessIDGenerator {
+func NewFakeBusinessIDGenerator(nextID domain.BusinessID) service.BusinessIDGenerator {
 	return &FakeBusinessIDGenerator{NextID: nextID}
 }
 

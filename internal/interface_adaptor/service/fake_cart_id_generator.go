@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/service"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 )
@@ -11,7 +12,7 @@ type FakeCartIDGenerator struct {
 	Err    error
 }
 
-func NewFakeCartIDGenerator(nextID domain.CartID) *FakeCartIDGenerator {
+func NewFakeCartIDGenerator(nextID domain.CartID) service.CartIDGenerator {
 	return &FakeCartIDGenerator{NextID: nextID}
 }
 
