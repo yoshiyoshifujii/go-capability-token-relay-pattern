@@ -52,6 +52,8 @@ func paymentIntentID(intent domain.PaymentIntent) domain.PaymentIntentID {
 		return v.ID
 	case domain.PaymentIntentSucceeded:
 		return v.ID
+	case domain.PaymentIntentCanceled:
+		return v.ID
 	default:
 		panic("unsupported payment intent aggregate for in-memory repository")
 	}

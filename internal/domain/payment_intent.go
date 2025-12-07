@@ -12,6 +12,7 @@ type (
 		RequireCapture() (PaymentIntentEvent, PaymentIntent, error)
 		StartProcessing() (PaymentIntentEvent, PaymentIntent, error)
 		Complete() (PaymentIntentEvent, PaymentIntent, error)
+		Fail(PaymentFailureReason, bool) (PaymentIntentEvent, PaymentIntent, error)
 	}
 
 	paymentIntentMeta struct {
@@ -50,5 +51,9 @@ func (p paymentIntentMeta) StartProcessing() (PaymentIntentEvent, PaymentIntent,
 }
 
 func (p paymentIntentMeta) Complete() (PaymentIntentEvent, PaymentIntent, error) {
+	panic("intentionally unimplemented; concrete states must override as needed")
+}
+
+func (p paymentIntentMeta) Fail(reason PaymentFailureReason, retryable bool) (PaymentIntentEvent, PaymentIntent, error) {
 	panic("intentionally unimplemented; concrete states must override as needed")
 }

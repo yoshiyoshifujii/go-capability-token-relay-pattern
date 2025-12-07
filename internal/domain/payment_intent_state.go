@@ -17,6 +17,7 @@ type (
 		paymentIntentMeta
 		PaymentMethodType PaymentMethodType
 		Amount            Money
+		FailureReason     PaymentFailureReason
 	}
 
 	PaymentIntentRequiresConfirmation struct {
@@ -51,6 +52,13 @@ type (
 		paymentIntentMeta
 		PaymentMethod PaymentMethod
 		Amount        Money
+	}
+
+	PaymentIntentCanceled struct {
+		paymentIntentMeta
+		PaymentMethod PaymentMethod
+		Amount        Money
+		FailureReason PaymentFailureReason
 	}
 )
 
@@ -281,37 +289,34 @@ func (p PaymentIntentRequiresAction) RequireCapture() (PaymentIntentEvent, Payme
 func (p PaymentIntentRequiresAction) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
 	contract.AssertValidatable(p.PaymentMethod)
 
-	switch p.CaptureMethod {
-	case PaymentCaptureMethodManual:
-		return p.RequireCapture()
-	case PaymentCaptureMethodAutomatic:
-		seqNr := p.SeqNr + 1
-
-		event := PaymentIntentProcessingEvent{
-			paymentIntentEventMeta: paymentIntentEventMeta{
-				PaymentIntentID: p.ID,
-				SeqNr:           seqNr,
-			},
-			PaymentMethod: p.PaymentMethod,
-			CaptureMethod: p.CaptureMethod,
-			Amount:        p.Amount,
-		}
-
-		aggregate := PaymentIntentProcessing{
-			paymentIntentMeta: paymentIntentMeta{
-				ID:     p.ID,
-				SeqNr:  seqNr,
-				Amount: p.Amount,
-			},
-			PaymentMethod: p.PaymentMethod,
-			CaptureMethod: p.CaptureMethod,
-			Amount:        p.Amount,
-		}
-
-		return event, aggregate, nil
-	default:
-		panic("invalid capture method")
+	if p.CaptureMethod != PaymentCaptureMethodAutomatic {
+		return nil, nil, errors.New("capture method must be automatic to start processing after action")
 	}
+
+	seqNr := p.SeqNr + 1
+
+	event := PaymentIntentProcessingEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: p.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
+	}
+
+	aggregate := PaymentIntentProcessing{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:     p.ID,
+			SeqNr:  seqNr,
+			Amount: p.Amount,
+		},
+		PaymentMethod: p.PaymentMethod,
+		CaptureMethod: p.CaptureMethod,
+		Amount:        p.Amount,
+	}
+
+	return event, aggregate, nil
 }
 
 func (p PaymentIntentRequiresCapture) StartProcessing() (PaymentIntentEvent, PaymentIntent, error) {
@@ -369,6 +374,84 @@ func (p PaymentIntentProcessing) Complete() (PaymentIntentEvent, PaymentIntent, 
 		},
 		PaymentMethod: p.PaymentMethod,
 		Amount:        p.Amount,
+	}
+
+	return event, aggregate, nil
+}
+
+func (p PaymentIntentRequiresConfirmation) Fail(reason PaymentFailureReason, retryable bool) (PaymentIntentEvent, PaymentIntent, error) {
+	return failPaymentIntent(p.paymentIntentMeta, p.PaymentMethod, p.Amount, reason, retryable)
+}
+
+func (p PaymentIntentRequiresAction) Fail(reason PaymentFailureReason, retryable bool) (PaymentIntentEvent, PaymentIntent, error) {
+	return failPaymentIntent(p.paymentIntentMeta, p.PaymentMethod, p.Amount, reason, retryable)
+}
+
+func (p PaymentIntentRequiresCapture) Fail(reason PaymentFailureReason, retryable bool) (PaymentIntentEvent, PaymentIntent, error) {
+	return failPaymentIntent(p.paymentIntentMeta, p.PaymentMethod, p.Amount, reason, retryable)
+}
+
+func (p PaymentIntentProcessing) Fail(reason PaymentFailureReason, retryable bool) (PaymentIntentEvent, PaymentIntent, error) {
+	return failPaymentIntent(p.paymentIntentMeta, p.PaymentMethod, p.Amount, reason, retryable)
+}
+
+func failPaymentIntent(
+	meta paymentIntentMeta,
+	paymentMethod PaymentMethod,
+	amount Money,
+	reason PaymentFailureReason,
+	retryable bool,
+) (PaymentIntentEvent, PaymentIntent, error) {
+	contract.AssertValidatable(paymentMethod)
+	contract.AssertValidatable(reason)
+
+	seqNr := meta.SeqNr + 1
+
+	if retryable {
+		event := PaymentIntentFailedEvent{
+			paymentIntentEventMeta: paymentIntentEventMeta{
+				PaymentIntentID: meta.ID,
+				SeqNr:           seqNr,
+			},
+			PaymentMethodType: paymentMethod.PaymentMethodType,
+			PaymentMethod:     paymentMethod,
+			Amount:            amount,
+			Reason:            reason,
+		}
+
+		aggregate := PaymentIntentRequiresPaymentMethod{
+			paymentIntentMeta: paymentIntentMeta{
+				ID:     meta.ID,
+				SeqNr:  seqNr,
+				Amount: amount,
+			},
+			PaymentMethodType: paymentMethod.PaymentMethodType,
+			Amount:            amount,
+			FailureReason:     reason,
+		}
+
+		return event, aggregate, nil
+	}
+
+	event := PaymentIntentCanceledEvent{
+		paymentIntentEventMeta: paymentIntentEventMeta{
+			PaymentIntentID: meta.ID,
+			SeqNr:           seqNr,
+		},
+		PaymentMethod: paymentMethod,
+		Amount:        amount,
+		Reason:        reason,
+	}
+
+	aggregate := PaymentIntentCanceled{
+		paymentIntentMeta: paymentIntentMeta{
+			ID:     meta.ID,
+			SeqNr:  seqNr,
+			Amount: amount,
+		},
+		PaymentMethod: paymentMethod,
+		Amount:        amount,
+		FailureReason: reason,
 	}
 
 	return event, aggregate, nil

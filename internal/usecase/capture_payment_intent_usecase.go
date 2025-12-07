@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/domain"
 	"yoshiyoshifujii/go-capability-token-relay-pattern/internal/lib/contract"
@@ -71,7 +72,18 @@ func (u *capturePaymentIntentUseCase) Execute(ctx context.Context, input Capture
 		Intent: intent,
 		Amount: intent.Amount,
 	}); err != nil {
-		return nil, err
+		event, aggregate, failErr := intent.Fail(domain.PaymentFailureReasonCaptureFailed, false)
+		if failErr != nil {
+			return nil, failErr
+		}
+		if saveErr := u.paymentIntentRepository.Save(ctx, event, aggregate); saveErr != nil {
+			return nil, saveErr
+		}
+
+		return &CapturePaymentIntentUseCaseOutput{
+			PaymentIntentID: input.PaymentIntentID,
+			PaymentIntent:   aggregate,
+		}, fmt.Errorf("capture payment intent failed: %w", err)
 	}
 
 	event, aggregate, err := intent.StartProcessing()

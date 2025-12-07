@@ -54,6 +54,21 @@ type (
 		PaymentMethod PaymentMethod
 		Amount        Money
 	}
+
+	PaymentIntentFailedEvent struct {
+		paymentIntentEventMeta
+		PaymentMethodType PaymentMethodType
+		PaymentMethod     PaymentMethod
+		Amount            Money
+		Reason            PaymentFailureReason
+	}
+
+	PaymentIntentCanceledEvent struct {
+		paymentIntentEventMeta
+		PaymentMethod PaymentMethod
+		Amount        Money
+		Reason        PaymentFailureReason
+	}
 )
 
 func (e paymentIntentEventMeta) PaymentIntentEvent() {
